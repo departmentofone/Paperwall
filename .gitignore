@@ -1,0 +1,10 @@
+# build output
+dist/
+release/
+host/packages/
+host/app.ico
+
+# local tooling
+.claude/
+*.log
+Thumbs.db

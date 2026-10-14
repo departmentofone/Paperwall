@@ -1,0 +1,14 @@
+{
+  "AppVersion": "1.0.0.0",
+  "Title": "Shan Shui Infinite+",
+  "Thumbnail": "thumbnail.jpg",
+  "Preview": "",
+  "Desc": "An endless, procedurally painted Chinese ink landscape with parallax depth, drifting mist, day/night synced to your clock, seasons and weather.",
+  "Author": "Department of One",
+  "License": "MIT",
+  "Contact": "",
+  "Type": 1,
+  "FileName": "index.html",
+  "Arguments": "",
+  "IsAbsolutePath": false
+}

@@ -1,0 +1,29 @@
+{
+  "file": "index.html",
+  "preview": "thumbnail.jpg",
+  "title": "Shan Shui Infinite+",
+  "type": "web",
+  "general": {
+    "properties": {
+      "speed": { "order": 1, "text": "Scroll speed", "type": "slider", "min": 0.2, "max": 4, "step": 0.1, "precision": 1, "fraction": true, "value": 1 },
+      "fps": { "order": 2, "text": "Frame rate cap", "type": "slider", "min": 10, "max": 60, "value": 30 },
+      "time": { "order": 3, "text": "Time of day", "type": "combo", "value": "auto", "options": [
+        { "label": "Follow the clock", "value": "auto" }, { "label": "Dawn", "value": "dawn" }, { "label": "Day", "value": "day" },
+        { "label": "Dusk", "value": "dusk" }, { "label": "Night", "value": "night" }, { "label": "Fast day cycle", "value": "cycle" } ] },
+      "season": { "order": 4, "text": "Season", "type": "combo", "value": "auto", "options": [
+        { "label": "Follow the calendar", "value": "auto" }, { "label": "Spring", "value": "spring" }, { "label": "Summer", "value": "summer" },
+        { "label": "Autumn", "value": "autumn" }, { "label": "Winter", "value": "winter" } ] },
+      "weather": { "order": 5, "text": "Weather", "type": "combo", "value": "auto", "options": [
+        { "label": "Automatic", "value": "auto" }, { "label": "Clear", "value": "none" }, { "label": "Rain", "value": "rain" }, { "label": "Snow", "value": "snow" } ] },
+      "style": { "order": 6, "text": "Style", "type": "combo", "value": "ink", "options": [
+        { "label": "Ink", "value": "ink" }, { "label": "Blue-green (qinglu)", "value": "jade" } ] },
+      "quality": { "order": 7, "text": "Resolution", "type": "combo", "value": "auto", "options": [
+        { "label": "Auto (build default)", "value": "auto" }, { "label": "720p (weak GPUs)", "value": "low" }, { "label": "1080p", "value": "1080p" },
+        { "label": "1440p / 2K", "value": "1440p" }, { "label": "2160p / 4K", "value": "4k" }, { "label": "Native", "value": "native" } ] },
+      "birds": { "order": 8, "text": "Birds", "type": "bool", "value": true },
+      "mist": { "order": 9, "text": "Drifting mist", "type": "bool", "value": true },
+      "inscription": { "order": 10, "text": "Inscription and seal", "type": "bool", "value": true },
+      "newscene": { "order": 11, "text": "New scene (toggle)", "type": "bool", "value": false }
+    }
+  }
+}

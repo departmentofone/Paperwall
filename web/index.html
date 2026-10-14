@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shan Shui Infinite+</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #f0e9d8; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; opacity: 0; transition: opacity .9s cubic-bezier(0.23, 1, 0.32, 1); } /* strong ease-out: quick to appear, gentle to settle */
+  canvas.on { opacity: 1; }
+  #help { position: fixed; left: 16px; bottom: 16px; font: 12px/1.6 system-ui, sans-serif; color: #3a352e;
+          background: rgba(240,233,216,.88); border: 1px solid rgba(0,0,0,.12); border-radius: 6px; padding: 10px 14px;
+          transition: opacity .6s; pointer-events: none; }
+  #help kbd { font: 11px monospace; background: rgba(0,0,0,.07); border-radius: 3px; padding: 0 4px; }
+  #help.hide { opacity: 0; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="help" class="hide"></div>
+<script src="variant.js"></script>
+<script src="config.js"></script>
+<script src="shanshui.js"></script>
+<script>
+(function () {
+  'use strict';
+  const q = new URLSearchParams(location.search);
+  const opts = {};
+  for (const k of Object.keys(ShanShui.DEFAULTS)) if (q.has(k)) opts[k] = q.get(k);
+  const eng = new ShanShui.Engine(document.getElementById('c'), {});
+  for (const k in opts) eng.set(k, opts[k]);
+  if (q.has('nofade')) document.getElementById('c').style.transition = 'none';
+  eng.warm();
+  requestAnimationFrame(() => document.getElementById('c').classList.add('on'));
+  eng.start();
+  window.shanshui = eng;
+
+  let rt = 0;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { eng.resize(); eng.lastSig = ''; eng.render(0); }, 200); });
+  // Re-evaluate season / auto weather a few times an hour (cheap no-op when unchanged).
+  setInterval(() => eng._applyDerived(false), 10 * 60 * 1000);
+
+  // ---- Native host (WebView2): {type:'pause', value:bool} | {type:'set', key, value} | {type:'config', value:{...}}
+  if (window.chrome && chrome.webview) {
+    chrome.webview.addEventListener('message', (e) => {
+      const m = e.data;
+      if (!m || typeof m !== 'object') return;
+      if (m.type === 'pause') eng.pause(!!m.value);
+      else if (m.type === 'set') eng.set(m.key, m.value);
+      else if (m.type === 'config') for (const k in m.value) eng.set(k, m.value[k]);
+    });
+    chrome.webview.postMessage({ type: 'ready' });
+  }
+
+  // ---- Lively Wallpaper (LivelyProperties.json)
+  const LISTS = {
+    time: ['auto', 'dawn', 'day', 'dusk', 'night', 'cycle'],
+    season: ['auto', 'spring', 'summer', 'autumn', 'winter'],
+    weather: ['auto', 'none', 'rain', 'snow'],
+    style: ['ink', 'jade'],
+    quality: ['auto', 'low', '1080p', '1440p', '4k', 'native'],
+  };
+  window.livelyPropertyListener = function (name, val) {
+    if (name === 'newScene') { eng.set('seed', (Math.random() * 1e9) | 0); return; }
+    if (LISTS[name]) val = LISTS[name][val] || LISTS[name][0];
+    eng.set(name, val);
+  };
+  window.livelyWallpaperPlaybackChanged = function (data) {
+    try { eng.pause(JSON.parse(data).IsPaused); } catch (e) {}
+  };
+
+  // ---- Wallpaper Engine (project.json)
+  window.wallpaperPropertyListener = {
+    applyUserProperties(p) {
+      for (const k in p) {
+        let v = p[k].value;
+        if (k === 'newscene') { if (v) eng.set('seed', (Math.random() * 1e9) | 0); continue; }
+        eng.set(k, v);
+      }
+    },
+    setPaused(p) { eng.pause(p); },
+  };
+
+  // ---- Browser preview controls
+  const help = document.getElementById('help');
+  help.innerHTML = '<kbd>Space</kbd> pause &nbsp; <kbd>N</kbd> new scene &nbsp; <kbd>+</kbd>/<kbd>-</kbd> speed &nbsp; <kbd>T</kbd> time &nbsp; <kbd>S</kbd> season &nbsp; <kbd>W</kbd> weather &nbsp; <kbd>J</kbd> ink/jade &nbsp; <kbd>Q</kbd> quality &nbsp; <kbd>H</kbd> stats';
+  if (q.get('preview') === '1') { help.classList.remove('hide'); setTimeout(() => help.classList.add('hide'), 7000); }
+  const cycle = (key) => { const l = LISTS[key], i = l.indexOf(eng.o[key]); eng.set(key, l[(i + 1) % l.length]); toast(key + ': ' + eng.o[key]); };
+  function toast(t) { help.textContent = t; help.classList.remove('hide'); clearTimeout(toast.t); toast.t = setTimeout(() => help.classList.add('hide'), 1600); }
+  addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase();
+    if (k === ' ') { eng.pause(!eng.paused); toast(eng.paused ? 'paused' : 'playing'); }
+    else if (k === 'n') { eng.set('seed', (Math.random() * 1e9) | 0); toast('seed ' + eng.o.seed); }
+    else if (k === '+' || k === '=') { eng.set('speed', Math.min(8, eng.o.speed * 1.5)); toast('speed ' + eng.o.speed.toFixed(2)); }
+    else if (k === '-') { eng.set('speed', Math.max(0.1, eng.o.speed / 1.5)); toast('speed ' + eng.o.speed.toFixed(2)); }
+    else if (k === 't') cycle('time');
+    else if (k === 's') cycle('season');
+    else if (k === 'w') cycle('weather');
+    else if (k === 'j') cycle('style');
+    else if (k === 'q') cycle('quality');
+    else if (k === 'h') eng.set('hud', !eng.o.hud);
+  });
+})();
+</script>
+</body>
+</html>
