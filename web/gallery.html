@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Driftscape</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #12100e; --rail: #161310; --panel: #171411; --card: #1e1a16; --card-hi: #25201b;
+    --line: rgba(255, 236, 210, 0.08); --line-hi: rgba(255, 236, 210, 0.16);
+    --text: #efe8dd; --muted: #a8a093; --faint: #8f877b;
+    --accent: #d4472f; --accent-text: #f06a50; --accent-soft: rgba(212, 71, 47, 0.16);
+    --shadow: 0 1px 0 rgba(255, 240, 220, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
+    --serif: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+    --cjk: 'Yu Mincho', 'YuMincho', 'Hiragino Mincho ProN', 'MS Mincho', 'KaiTi', 'SimSun', serif;
+    --ui: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --ease: cubic-bezier(0.23, 1, 0.32, 1);
+    --paper: #f0e9d8;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      color-scheme: light;
+      --bg: #f3eee5; --rail: #ece5d9; --panel: #efe9df; --card: #fbf8f2; --card-hi: #ffffff;
+      --line: rgba(60, 40, 20, 0.1); --line-hi: rgba(60, 40, 20, 0.2);
+      --text: #26211b; --muted: #635a4f; --faint: #7a7064;
+      --accent: #c23b25; --accent-text: #b5341f; --accent-soft: rgba(194, 59, 37, 0.1);
+      --shadow: 0 1px 2px rgba(60, 40, 20, 0.06), 0 8px 24px rgba(60, 40, 20, 0.08);
+    }
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #f3eee5; --rail: #ece5d9; --panel: #efe9df; --card: #fbf8f2; --card-hi: #ffffff;
+    --line: rgba(60, 40, 20, 0.1); --line-hi: rgba(60, 40, 20, 0.2);
+    --text: #26211b; --muted: #635a4f; --faint: #7a7064;
+    --accent: #c23b25; --accent-text: #b5341f; --accent-soft: rgba(194, 59, 37, 0.1);
+    --shadow: 0 1px 2px rgba(60, 40, 20, 0.06), 0 8px 24px rgba(60, 40, 20, 0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 13px/1.45 var(--ui); -webkit-font-smoothing: antialiased; }
+  body { overflow: hidden; user-select: none; }
+  button, select, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+  .app { display: grid; grid-template-columns: 264px minmax(0, 1fr) 320px; height: 100vh; }
+
+  /* ---- theme rail */
+  .rail { background: var(--rail); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  .brand { display: flex; align-items: center; gap: 12px; padding: 22px 20px 18px; }
+  .seal { width: 34px; height: 34px; border-radius: 7px; background: var(--accent); color: #fff; display: grid; place-items: center; font: 600 20px/1 var(--cjk); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); flex: none; transition: transform .5s var(--ease); }
+  .brand h1 { margin: 0; font: 500 21px/1.1 var(--serif); letter-spacing: 0.01em; }
+  .brand p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+  .label { margin: 0; padding: 0 20px 8px; color: var(--faint); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+  .themes { flex: 1; overflow: auto; padding: 2px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .theme { display: block; width: 100%; text-align: left; padding: 8px; border-radius: 12px; border: 1px solid transparent; background: transparent; transition: background-color .2s, border-color .2s; }
+  .theme:hover { background: var(--card); }
+  .theme[aria-pressed="true"] { background: var(--card); border-color: var(--line-hi); box-shadow: var(--shadow); }
+  .thumb { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: var(--paper); }
+  .thumb canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .6s var(--ease); }
+  .thumb canvas.on { opacity: 1; }
+  .theme .meta { display: flex; align-items: baseline; gap: 8px; padding: 9px 4px 2px; }
+  .theme .name { font: 500 15px/1.2 var(--serif); }
+  .native { font-family: var(--cjk); color: var(--muted); font-size: 12px; }
+  .theme .tag { padding: 0 4px 2px; color: var(--muted); font-size: 12px; }
+  .chip { position: absolute; left: 8px; top: 8px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; background: rgba(20, 16, 12, 0.72); color: #f4ede2; backdrop-filter: blur(6px); opacity: 0; transition: opacity .3s; }
+  .theme.live .chip { opacity: 1; }
+  .chip i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #5fd38a; margin-right: 6px; vertical-align: 1px; }
+  .rail-foot { padding: 14px 20px 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+  .rail-foot b { color: var(--text); font-weight: 600; }
+
+  /* ---- centre: preview + styles */
+  .centre { min-width: 0; overflow: auto; padding: 22px 26px 28px; display: flex; flex-direction: column; gap: 22px; }
+  .preview { position: relative; width: 100%; border-radius: 14px; overflow: hidden; background: var(--paper); box-shadow: 0 0 0 1px var(--line-hi), 0 18px 50px rgba(0, 0, 0, 0.35); flex: none; }
+  .preview canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .9s var(--ease); }
+  .preview canvas.on { opacity: 1; }
+  .overlay { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 40px 16px 14px; background: linear-gradient(to top, rgba(18, 14, 10, 0.62), rgba(18, 14, 10, 0)); color: #f6f0e6; pointer-events: none; }
+  .overlay .title { font: 500 22px/1.15 var(--serif); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35); }
+  .overlay .title span { font-family: var(--cjk); font-size: 15px; opacity: 0.8; margin-left: 8px; }
+  .overlay .sub { font-size: 12px; opacity: 0.82; margin-top: 2px; }
+  .tools { display: flex; gap: 8px; pointer-events: auto; }
+  .tool { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid rgba(255, 245, 230, 0.22); background: rgba(24, 19, 15, 0.55); color: #f6f0e6; backdrop-filter: blur(8px); font-weight: 500; transition: background-color .15s, transform .12s var(--ease); }
+  .tool:hover { background: rgba(24, 19, 15, 0.75); }
+  .tool:active { transform: scale(0.97); }
+  .tool svg { width: 15px; height: 15px; }
+  .tool.icon { width: 32px; padding: 0; justify-content: center; }
+  .badge { position: absolute; top: 12px; right: 12px; z-index: 3; padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; background: rgba(20, 16, 12, 0.7); color: #f4ede2; backdrop-filter: blur(6px); opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .badge.show { opacity: 1; }
+
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 0 0 10px; }
+  .section-head h2 { margin: 0; font: 500 17px/1.2 var(--serif); }
+  .section-head p { margin: 0; color: var(--muted); font-size: 12px; }
+  .styles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .style { text-align: left; padding: 7px 7px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); transition: border-color .2s, background-color .2s, transform .15s var(--ease); }
+  .style:hover { border-color: var(--line-hi); background: var(--card-hi); }
+  .style:active { transform: scale(0.985); }
+  .style[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow); }
+  .style .thumb { border-radius: 7px; }
+  .style .row { display: flex; align-items: baseline; gap: 7px; padding: 9px 3px 0; }
+  .style .name { font-weight: 600; font-size: 13px; }
+  .style .blurb { padding: 3px 3px 0; color: var(--muted); font-size: 12px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .swatch { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; height: 4px; }
+  .swatch i { flex: 1; }
+
+  /* ---- settings panel */
+  .panel { background: var(--panel); border-left: 1px solid var(--line); overflow: auto; padding: 18px 18px 24px; }
+  .group { padding: 4px 0 18px; }
+  .group + .group { border-top: 1px solid var(--line); padding-top: 16px; }
+  .group h3 { margin: 0 0 12px; color: var(--faint); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field > .lbl { display: flex; justify-content: space-between; margin-bottom: 7px; color: var(--muted); font-size: 12px; }
+  .field > .lbl output { color: var(--text); font-variant-numeric: tabular-nums; }
+  .seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; padding: 3px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); }
+  .seg button { min-width: 0; padding: 5px 2px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 500; white-space: nowrap; transition: background-color .15s, color .15s; }
+  .seg button:hover { color: var(--text); }
+  .seg button[aria-pressed="true"] { background: var(--card-hi); color: var(--text); box-shadow: 0 0 0 1px var(--line-hi), 0 1px 3px rgba(0, 0, 0, 0.2); }
+  .switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 7px 0; border: 0; background: none; text-align: left; font-size: 13px; }
+  .switch .knob { position: relative; flex: none; width: 34px; height: 20px; border-radius: 99px; background: var(--line-hi); transition: background-color .2s; }
+  .switch .knob::after { content: ''; position: absolute; left: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); transition: transform .25s var(--ease); }
+  .switch[aria-checked="true"] .knob { background: var(--accent); }
+  .switch[aria-checked="true"] .knob::after { transform: translateX(14px); }
+  .switch small { display: block; color: var(--faint); font-size: 11.5px; margin-top: 1px; }
+  input[type=range] { width: 100%; height: 20px; margin: 0; background: transparent; -webkit-appearance: none; appearance: none; }
+  input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 99px; background: linear-gradient(to right, var(--accent) var(--p, 30%), var(--line-hi) var(--p, 30%)); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 4px rgba(0, 0, 0, 0.35); }
+  select { width: 100%; height: 32px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--line); background: var(--card); }
+  .links { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--line-hi); background: var(--card); font-weight: 500; transition: background-color .15s; }
+  .btn:hover { background: var(--card-hi); }
+  .note { color: var(--faint); font-size: 12px; margin: 10px 0 0; }
+  .only-native { display: none; }
+  body.in-app .only-native { display: block; }
+  body.in-app .only-web { display: none; }
+
+  .thumbs-host { position: fixed; left: -10000px; top: 0; width: 320px; height: 180px; visibility: hidden; }
+
+  @media (max-width: 1100px) { .app { grid-template-columns: 220px minmax(0, 1fr) 290px; } .styles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (prefers-reduced-motion: reduce) { * { transition-duration: 0.01ms !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail">
+    <header class="brand"><div class="seal" id="seal">景</div><div><h1>Driftscape</h1><p>Living wallpapers</p></div></header>
+    <p class="label">Themes</p>
+    <nav class="themes" id="themes" aria-label="Themes"></nav>
+    <footer class="rail-foot">
+      <div class="only-native" id="deskline">On your desktop: <b id="desktopName">…</b></div>
+      <div class="only-web">Preview only. Run Driftscape.exe to put it on your desktop.</div>
+    </footer>
+  </aside>
+
+  <main class="centre">
+    <div class="preview" id="preview">
+      <div class="badge" id="badge">Paused in the background</div>
+      <div class="overlay">
+        <div><div class="title" id="pvTitle"></div><div class="sub" id="pvSub"></div></div>
+        <div class="tools">
+          <button class="tool icon" id="pvPause" title="Pause preview" aria-label="Pause preview"></button>
+          <button class="tool" id="pvNew" title="Paint a new scene"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h2.5c1.6 0 2.6.8 3.5 2.3l1 1.4c.9 1.5 1.9 2.3 3.5 2.3H14M12 2.5 14 4l-2 1.5M2 12h2.5c1 0 1.8-.3 2.4-.9M12 10.5l2 1.5-2 1.5M9.5 5c.7-.6 1.4-1 2.5-1"/></svg>New scene</button>
+        </div>
+      </div>
+    </div>
+    <section>
+      <div class="section-head"><h2>Style</h2><p id="styleNote"></p></div>
+      <div class="styles" id="styles"></div>
+    </section>
+  </main>
+
+  <aside class="panel" id="panel">
+    <div class="group">
+      <h3>Scene</h3>
+      <div class="field"><div class="lbl">Time of day</div><div class="seg" data-key="time"></div></div>
+      <div class="field"><div class="lbl">Season</div><div class="seg" data-key="season"></div></div>
+      <div class="field"><div class="lbl">Weather</div><div class="seg" data-key="weather"></div></div>
+      <div class="field"><div class="lbl">Scroll speed <output id="speedOut"></output></div><input type="range" id="speed" min="0" max="100" step="1"></div>
+    </div>
+    <div class="group">
+      <h3>Details</h3>
+      <div id="toggles"></div>
+    </div>
+    <div class="group">
+      <h3>Performance</h3>
+      <div class="field"><div class="lbl">Frame rate</div><div class="seg" data-key="fps"></div></div>
+      <div class="field"><div class="lbl">Resolution</div><select id="quality"></select></div>
+      <div class="field only-native"><div class="lbl">On battery or energy saver</div><div class="seg" data-key="batteryFps"></div></div>
+    </div>
+    <div class="group only-native">
+      <h3>Desktop</h3>
+      <div id="desktopToggles"></div>
+      <div class="links" style="margin-top:12px">
+        <button class="btn" id="deskPause">Pause desktop</button>
+        <button class="btn" id="reload">Reload</button>
+        <button class="btn" id="folder">Open web folder</button>
+      </div>
+      <p class="note">Changes reach your desktop as you make them.</p>
+    </div>
+  </aside>
+</div>
+<div class="thumbs-host" id="thumbsHost"></div>
+
+<script src="variant.js"></script>
+<script src="config.js"></script>
+<script src="core.js"></script>
+<script src="themes/shanshui.js"></script>
+<script src="themes/yugen.js"></script>
+<script src="themes/jiangnan.js"></script>
+<script src="themes/tabiji.js"></script>
+<script src="stage.js"></script>
+<script>
+(function () {
+  'use strict';
+  const D = window.Driftscape, $ = (id) => document.getElementById(id);
+  const native = !!(window.chrome && chrome.webview);
+  if (native) document.body.classList.add('in-app');
+  const THEMES = D.manifest();
+  const byId = (id) => THEMES.find((t) => t.id === id) || THEMES[0];
+
+  // ---- settings: the host's settings.ini in the app, localStorage in a browser
+  const DEFAULTS = { theme: 'yugen', speed: '1', fps: '30', quality: 'auto', time: 'auto', season: 'auto', weather: 'auto', birds: 'true', mist: 'true', inscription: 'true', paper: 'true', pauseUnfocused: 'true', pauseFullscreen: 'true', pauseMaximized: 'true', batteryFps: '15' };
+  let S = Object.assign({}, DEFAULTS), autostart = false, deskPaused = false, live = null;
+  if (!native) { try { Object.assign(S, JSON.parse(localStorage.getItem('driftscape.settings') || '{}')); } catch (e) {} }
+  if (!S.seed) S.seed = String((Math.random() * 1e9) | 0);
+  const styleOf = (id) => S['style.' + id] || byId(id).defaultStyle;
+  const bool = (v) => v === true || v === 'true';
+  const PAGE = ['speed', 'quality', 'time', 'season', 'weather', 'birds', 'inscription', 'mist', 'paper'];
+
+  function send(msg) { if (native) chrome.webview.postMessage(msg); }
+  function save() { if (!native) try { localStorage.setItem('driftscape.settings', JSON.stringify(S)); } catch (e) {} }
+
+  // ---- the live preview
+  const pv = $('preview');
+  const ratio = Math.max(1.3, Math.min(3.6, screen.width / screen.height || 16 / 9));
+  pv.style.aspectRatio = ratio.toFixed(3);
+  const pageOpts = () => { const o = { theme: S.theme, style: styleOf(S.theme), seed: +S.seed }; for (const k of PAGE) o[k] = S[k]; return o; };
+  const stage = new D.Stage(pv, pageOpts(), {});
+  stage.autoPause(1500);
+  let pvPaused = false;
+  const ICON_PAUSE = '<svg viewBox="0 0 16 16" fill="currentColor"><rect x="4" y="3" width="2.6" height="10" rx="1"/><rect x="9.4" y="3" width="2.6" height="10" rx="1"/></svg>';
+  const ICON_PLAY = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.2v9.6c0 .5.5.8.9.5l7-4.8c.4-.3.4-.8 0-1.1l-7-4.8c-.4-.2-.9.1-.9.6Z"/></svg>';
+  function paintPause() { $('pvPause').innerHTML = pvPaused ? ICON_PLAY : ICON_PAUSE; $('pvPause').title = pvPaused ? 'Play preview' : 'Pause preview'; }
+  $('pvPause').onclick = () => { pvPaused = !pvPaused; stage.pause(pvPaused); paintPause(); };
+  paintPause();
+  setInterval(() => $('badge').classList.toggle('show', stage.focusPaused && !pvPaused), 300);
+  $('pvNew').onclick = () => {
+    S.seed = String((Math.random() * 1e9) | 0); save();
+    stage.set('seed', +S.seed);
+    send({ type: 'newScene' });
+    queueThumbs(true);
+  };
+
+  // ---- one setter for everything
+  function set(key, value, fromHost) {
+    S[key] = String(value);
+    if (key === 'theme') { stage.config({ theme: value, style: styleOf(value) }); renderAll(); queueThumbs(false); }
+    else if (key === 'style') { S['style.' + S.theme] = String(value); delete S.style; stage.set('style', value); renderStyles(); renderThemes(); renderTitle(); }
+    else if (PAGE.indexOf(key) >= 0) { stage.set(key, value); renderPanel(); if (key === 'time' || key === 'season') queueThumbs(true); }
+    else renderPanel();
+    save();
+    if (!fromHost) send({ type: 'set', key, value: String(value) });
+  }
+
+  // ---- theme rail
+  function renderThemes() {
+    const box = $('themes');
+    if (!box.children.length) {
+      for (const t of THEMES) {
+        const b = document.createElement('button');
+        b.className = 'theme'; b.dataset.id = t.id;
+        b.innerHTML = '<span class="thumb"><span class="chip"><i></i>On desktop</span></span><span class="meta"><span class="name"></span><span class="native"></span></span><div class="tag"></div>';
+        b.querySelector('.name').textContent = t.name;
+        b.querySelector('.native').textContent = t.native;
+        b.querySelector('.tag').textContent = t.tagline;
+        b.onclick = () => set('theme', t.id);
+        box.appendChild(b);
+      }
+    }
+    for (const b of box.children) {
+      b.setAttribute('aria-pressed', b.dataset.id === S.theme);
+      b.classList.toggle('live', native && b.dataset.id === (live || S.theme));
+    }
+  }
+
+  // ---- style tiles for the selected theme
+  function renderStyles() {
+    const t = byId(S.theme), box = $('styles'), cur = styleOf(t.id);
+    if (box.dataset.theme !== t.id) {
+      box.dataset.theme = t.id; box.innerHTML = '';
+      for (const s of t.styles) {
+        const b = document.createElement('button');
+        b.className = 'style'; b.dataset.id = s.id;
+        b.innerHTML = '<span class="thumb"><span class="swatch"></span></span><div class="row"><span class="name"></span><span class="native"></span></div><div class="blurb"></div>';
+        b.querySelector('.name').textContent = s.name;
+        b.querySelector('.native').textContent = s.native;
+        b.querySelector('.blurb').textContent = s.blurb;
+        b.querySelector('.swatch').innerHTML = (s.swatch || []).map((c) => '<i style="background:' + c + '"></i>').join('');
+        b.onclick = () => set('style', s.id);
+        box.appendChild(b);
+      }
+    }
+    for (const b of box.children) b.setAttribute('aria-pressed', b.dataset.id === cur);
+    $('styleNote').textContent = t.styles.length + ' ways to paint ' + t.name;
+  }
+  function renderTitle() {
+    const t = byId(S.theme), s = t.styles.find((x) => x.id === styleOf(t.id)) || t.styles[0];
+    $('pvTitle').innerHTML = '';
+    $('pvTitle').append(t.name);
+    const n = document.createElement('span'); n.textContent = t.native; $('pvTitle').append(n);
+    $('pvSub').textContent = s.name + ' · ' + t.tagline;
+    $('seal').textContent = t.native.charAt(0) || '景';
+    document.title = 'Driftscape · ' + t.name;
+    if (native) $('desktopName').textContent = t.name + ' · ' + s.name;
+  }
+
+  // ---- settings panel
+  const OPTIONS = {
+    time: [['auto', 'Auto'], ['dawn', 'Dawn'], ['day', 'Day'], ['dusk', 'Dusk'], ['night', 'Night'], ['cycle', 'Cycle']],
+    season: [['auto', 'Auto'], ['spring', 'Spring'], ['summer', 'Summer'], ['autumn', 'Autumn'], ['winter', 'Winter']],
+    fps: [['15', '15 fps'], ['24', '24'], ['30', '30'], ['60', '60']],
+    batteryFps: [['240', 'No limit'], ['15', '15 fps'], ['10', '10 fps']],
+  };
+  const QUALITY = [['auto', 'Auto (this build\'s default)'], ['low', '720p, lightest'], ['1080p', '1080p'], ['1440p', '1440p / 2K'], ['4k', '2160p / 4K'], ['native', 'Native']];
+  // speed slider: 0..100 maps to 0.25x..4x on a log scale
+  const toSpeed = (v) => +(0.25 * Math.pow(16, v / 100)).toFixed(2), fromSpeed = (s) => Math.round((Math.log(s / 0.25) / Math.log(16)) * 100);
+  function seg(el, key, opts) {
+    if (el.dataset.sig !== opts.map((o) => o[0]).join()) {
+      el.dataset.sig = opts.map((o) => o[0]).join(); el.innerHTML = '';
+      for (const [v, label] of opts) { const b = document.createElement('button'); b.textContent = label; b.dataset.v = v; b.onclick = () => set(key, v); el.appendChild(b); }
+    }
+    for (const b of el.children) b.setAttribute('aria-pressed', b.dataset.v === String(S[key]));
+  }
+  function switchRow(box, key, label, hint) {
+    let b = box.querySelector('[data-key="' + key + '"]');
+    if (!b) {
+      b = document.createElement('button'); b.className = 'switch'; b.dataset.key = key; b.setAttribute('role', 'switch');
+      b.innerHTML = '<span><span class="t"></span><small></small></span><span class="knob"></span>';
+      b.onclick = () => (key === 'autostart' ? setAutostart(b.getAttribute('aria-checked') !== 'true') : set(key, String(!bool(S[key]))));
+      box.appendChild(b);
+    }
+    b.querySelector('.t').textContent = label;
+    b.querySelector('small').textContent = hint || '';
+    b.querySelector('small').style.display = hint ? '' : 'none';
+    b.setAttribute('aria-checked', key === 'autostart' ? autostart : bool(S[key]));
+  }
+  function setAutostart(v) { autostart = v; send({ type: 'autostart', value: v }); renderPanel(); }
+  function renderPanel() {
+    const t = byId(S.theme);
+    for (const el of document.querySelectorAll('.seg')) {
+      const key = el.dataset.key;
+      if (key === 'weather') seg(el, key, t.weathers.map((w) => [w.id, w.id === 'auto' ? 'Auto' : w.id === 'petals' ? 'Blossom' : w.name]));
+      else seg(el, key, OPTIONS[key]);
+    }
+    const sp = $('speed'), spd = +S.speed || 1;
+    if (document.activeElement !== sp) sp.value = fromSpeed(spd);
+    sp.style.setProperty('--p', sp.value + '%');
+    $('speedOut').textContent = spd.toFixed(spd < 1 ? 2 : 1) + '×';
+    const q = $('quality');
+    if (!q.options.length) for (const [v, l] of QUALITY) q.add(new Option(l, v));
+    q.value = S.quality;
+    const tg = $('toggles');
+    if (tg.dataset.theme !== t.id) { tg.dataset.theme = t.id; tg.innerHTML = ''; }
+    for (const x of t.toggles) switchRow(tg, x.id, x.name);
+    const dt = $('desktopToggles');
+    switchRow(dt, 'pauseUnfocused', 'Pause when another app is in front', 'Stops 1.5 s after you switch away from the desktop');
+    switchRow(dt, 'pauseFullscreen', 'Pause behind fullscreen apps');
+    switchRow(dt, 'pauseMaximized', 'Pause behind maximized windows');
+    switchRow(dt, 'autostart', 'Start with Windows');
+    $('deskPause').textContent = deskPaused ? 'Resume desktop' : 'Pause desktop';
+  }
+  $('speed').addEventListener('input', (e) => { const v = toSpeed(+e.target.value); S.speed = String(v); stage.set('speed', v); renderPanel(); });
+  $('speed').addEventListener('change', (e) => set('speed', toSpeed(+e.target.value)));
+  $('quality').onchange = (e) => set('quality', e.target.value);
+  $('deskPause').onclick = () => { deskPaused = !deskPaused; send({ type: 'pause', value: deskPaused }); renderPanel(); };
+  $('reload').onclick = () => send({ type: 'reload' });
+  $('folder').onclick = () => send({ type: 'openFolder' });
+
+  function renderAll() { renderThemes(); renderStyles(); renderTitle(); renderPanel(); }
+
+  // ---- thumbnails: each theme / style painted once, offscreen, with your seed and settings
+  const thumbCache = {};
+  let thumbQueue = [], thumbBusy = false;
+  function thumbJobs() {
+    const jobs = [];
+    for (const t of THEMES) jobs.push({ el: () => document.querySelector('.theme[data-id="' + t.id + '"] .thumb'), theme: t.id, style: styleOf(t.id) });
+    const t = byId(S.theme);
+    for (const s of t.styles) jobs.push({ el: () => document.querySelector('.style[data-id="' + s.id + '"] .thumb'), theme: t.id, style: s.id });
+    return jobs;
+  }
+  function queueThumbs(force) {
+    if (force) for (const k in thumbCache) delete thumbCache[k];
+    thumbQueue = thumbJobs();
+    if (!thumbBusy) setTimeout(nextThumb, 60);
+  }
+  function nextThumb() {
+    const job = thumbQueue.shift();
+    if (!job) { thumbBusy = false; return; }
+    thumbBusy = true;
+    const host = job.el();
+    const key = [job.theme, job.style, S.seed, S.time, S.season].join('|');
+    if (!host || (host.dataset.key === key && host.querySelector('canvas'))) { setTimeout(nextThumb, 0); return; }
+    let img = thumbCache[key];
+    if (!img) {
+      // paint into a hidden canvas, keep the pixels, drop the engine
+      const box = $('thumbsHost'), c = document.createElement('canvas');
+      c.style.cssText = 'width:320px;height:180px;display:block';
+      box.appendChild(c);
+      const t = D.theme(job.theme);
+      const time = S.time === 'auto' || S.time === 'cycle' ? 'auto' : S.time;
+      const e = new t.Engine(c, { seed: +S.seed, style: job.style, time, season: S.season, weather: 'none', birds: false, inscription: false, quality: 'native' });
+      e.warm();
+      img = document.createElement('canvas'); img.width = c.width; img.height = c.height;
+      img.getContext('2d').drawImage(c, 0, 0);
+      e.destroy(); c.remove();
+      thumbCache[key] = img;
+    }
+    const out = document.createElement('canvas');
+    out.width = img.width; out.height = img.height;
+    out.getContext('2d').drawImage(img, 0, 0);
+    host.querySelectorAll('canvas').forEach((x) => x.remove());
+    host.appendChild(out); host.dataset.key = key;
+    requestAnimationFrame(() => out.classList.add('on'));
+    setTimeout(nextThumb, 30);
+  }
+
+  // ---- host state
+  if (native) {
+    chrome.webview.addEventListener('message', (e) => {
+      const m = e.data;
+      if (!m || m.type !== 'state') return;
+      const prevTheme = S.theme, prevStyle = styleOf(S.theme), prevSeed = S.seed;
+      S = Object.assign({}, DEFAULTS, m.settings);
+      autostart = !!m.autostart; deskPaused = !!m.paused; live = S.theme;
+      if (S.theme !== prevTheme) stage.config({ theme: S.theme, style: styleOf(S.theme) });
+      else if (styleOf(S.theme) !== prevStyle) stage.set('style', styleOf(S.theme));
+      if (S.seed !== prevSeed) { stage.set('seed', +S.seed); queueThumbs(true); }
+      for (const k of PAGE) stage.set(k, S[k]);
+      renderAll();
+      if (S.theme !== prevTheme) queueThumbs(false);
+    });
+    send({ type: 'hello' });
+  }
+  addEventListener('keydown', (e) => { if (e.key === ' ' && e.target === document.body) { e.preventDefault(); $('pvPause').click(); } });
+
+  renderAll();
+  queueThumbs(false);
+})();
+</script>
+</body>
+</html>

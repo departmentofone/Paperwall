@@ -1,4 +1,4 @@
-# Builds dist\ShanShuiWallpaper.exe with the C# compiler built into Windows (.NET Framework 4.8).
+# Builds dist\Driftscape.exe with the C# compiler built into Windows (.NET Framework 4.8).
 # The only download is Microsoft's WebView2 SDK package from nuget.org (~9 MB, cached in host\packages).
 param([string]$WebView2Version = '1.0.4258.31')
 $ErrorActionPreference = 'Stop'
@@ -24,7 +24,7 @@ if (-not (Test-Path $csc)) { $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framewo
 
 New-Item -ItemType Directory -Force $dist | Out-Null
 
-# App icon: a red seal with 山, drawn with System.Drawing.
+# App icon: a red seal with 景 (scenery), drawn with System.Drawing.
 Add-Type -AssemblyName System.Drawing
 $ico = Join-Path $here 'app.ico'
 if (-not (Test-Path $ico)) {
@@ -34,17 +34,17 @@ if (-not (Test-Path $ico)) {
     $g.FillRectangle((New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(176, 38, 32))), 4, 4, 56, 56)
     $font = New-Object System.Drawing.Font 'Microsoft YaHei', 40, ([System.Drawing.FontStyle]::Bold), ([System.Drawing.GraphicsUnit]::Pixel)
     $sf = New-Object System.Drawing.StringFormat; $sf.Alignment = 'Center'; $sf.LineAlignment = 'Center'
-    $g.DrawString([string][char]0x5C71, $font, [System.Drawing.Brushes]::White, (New-Object System.Drawing.RectangleF 0, 2, 64, 64), $sf)
+    $g.DrawString([string][char]0x666F, $font, [System.Drawing.Brushes]::White, (New-Object System.Drawing.RectangleF 0, 2, 64, 64), $sf)
     $icon = [System.Drawing.Icon]::FromHandle($bmp.GetHicon())
     $fs = [System.IO.File]::Create($ico); $icon.Save($fs); $fs.Close()
     $g.Dispose(); $bmp.Dispose()
 }
 
-$refs = @('System.dll', 'System.Drawing.dll', 'System.Windows.Forms.dll',
+$refs = @('System.dll', 'System.Drawing.dll', 'System.Windows.Forms.dll', 'System.Web.Extensions.dll',
           (Join-Path $lib.FullName 'Microsoft.Web.WebView2.Core.dll'),
           (Join-Path $lib.FullName 'Microsoft.Web.WebView2.WinForms.dll')) | ForEach-Object { "/r:$_" }
 
-& $csc /nologo /target:winexe /optimize+ /platform:anycpu "/win32icon:$ico" "/out:$(Join-Path $dist 'ShanShuiWallpaper.exe')" @refs (Join-Path $here 'ShanShuiWallpaper.cs')
+& $csc /nologo /target:winexe /optimize+ /platform:anycpu "/win32icon:$ico" "/out:$(Join-Path $dist 'Driftscape.exe')" @refs (Join-Path $here 'Driftscape.cs')
 if ($LASTEXITCODE -ne 0) { throw "csc failed ($LASTEXITCODE)" }
 
 Copy-Item (Join-Path $lib.FullName 'Microsoft.Web.WebView2.Core.dll'), (Join-Path $lib.FullName 'Microsoft.Web.WebView2.WinForms.dll') $dist -Force
@@ -59,4 +59,5 @@ foreach ($arch in 'win-x64', 'win-arm64', 'win-x86') {
 $web = Join-Path $dist 'web'
 if (Test-Path $web) { Remove-Item $web -Recurse -Force }
 Copy-Item (Join-Path $root 'web') $web -Recurse
-Write-Host "Built $(Join-Path $dist 'ShanShuiWallpaper.exe')"
+Get-ChildItem $web -Filter '_*' | Remove-Item -Force
+Write-Host "Built $(Join-Path $dist 'Driftscape.exe')"

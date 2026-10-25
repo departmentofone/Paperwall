@@ -8,3 +8,4 @@ host/app.ico
 .claude/
 *.log
 Thumbs.db
+.impeccable/

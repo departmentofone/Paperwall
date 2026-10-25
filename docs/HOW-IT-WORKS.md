@@ -1,26 +1,33 @@
-# How Shan Shui Infinite+ works
+# How Driftscape works
 
-This is a tour of how the landscape is generated and drawn, and how it ends up behind your desktop icons.
-Everything lives in two places:
+This is a tour of how the landscapes are generated and drawn, and how they end up behind your desktop icons.
+The examples come from the Shan Shui theme; Yūgen uses the same machinery with its own scene recipe and painters.
 
 | Part | File | Job |
 |---|---|---|
-| **Engine** | `web/shanshui.js` | Invents and paints the landscape (JavaScript, HTML canvas) |
-| **Page** | `web/index.html` | Starts the engine and listens for settings from the host, Lively or Wallpaper Engine |
-| **Host** | `host/ShanShuiWallpaper.cs` | A small Windows app. It puts the page behind your icons, adds the tray menu and pauses when you can't see it |
+| **Engine** | `web/core.js` | The shared machinery: chunks, parallax strips, mist, sky, night lights, weather |
+| **Themes** | `web/themes/*.js` | Each one subclasses the engine and supplies the scene recipe and painters |
+| **Stage** | `web/stage.js` | Runs the chosen theme and crossfades when you switch |
+| **Pages** | `web/index.html`, `web/gallery.html` | The wallpaper itself, and the settings window with live previews |
+| **Host** | `host/Driftscape.cs` | A small Windows app. It puts the page behind your icons, adds the tray menu and the settings window, and pauses when you can't see it |
 
 ```mermaid
 flowchart LR
-  subgraph Host["ShanShuiWallpaper.exe (C#)"]
+  subgraph Host["Driftscape.exe (C#)"]
     T[Tray menu + settings.ini] --> M[Messages]
-    O[Occlusion / battery / lock watcher] --> M
+    G[Settings window<br/>gallery.html] --> M
+    O[Focus / occlusion / battery / lock watcher] --> M
     D[Desktop layer finder<br/>Progman / WorkerW] --> W
   end
   subgraph W["WebView2 window per monitor"]
-    P[index.html] --> E[shanshui.js engine]
+    P[index.html] --> S[stage.js] --> E[theme engine<br/>core.js + themes/*.js]
   end
-  M -- "set / pause" --> P
+  M -- "set / config / pause" --> P
+  P -- "ready + theme list" --> T
 ```
+
+The page sends the host its list of themes and styles when it loads, and the tray menu is built from that list, so a new
+theme file needs no change to the Windows app.
 
 ---
 
@@ -68,7 +75,7 @@ Distant layers are pale and thin-lined, near layers dark and bold, which is the 
 | 5 | `near` | 905 | 100 % | Foreground shores: big pines and willows, villages, rivers, boats |
 
 Between layers, seven **mist bands** slide by at their own speeds. The low ones veil each layer's foot, and the high,
-thin ones are clouds drifting across the peaks. See the `LAYERS` and `MIST` tables at the top of `shanshui.js`.
+thin ones are clouds drifting across the peaks. See the `LAYERS` and `MIST` tables at the top of `themes/shanshui.js`.
 
 ## 4. Chunks, features and display lists: the core trick
 
@@ -226,13 +233,18 @@ holds the static wallpaper.
    displays change, everything is rebuilt.
 
 The host talks to the page with WebView2 messages such as `{"type":"set","key":"season","value":"winter"}` or
-`{"type":"pause","value":true}`. Lively and Wallpaper Engine reach the same `engine.set()` through their own callbacks.
+`{"type":"pause","value":true}`, and switches theme and style together with `{"type":"config","value":{"theme":"yugen","style":"hanga"}}`.
+Lively and Wallpaper Engine reach the same `stage.set()` through their own callbacks.
+
+The host also checks which window is in front every half second. If another app has been in front for 1.5 seconds, the
+wallpaper pauses until the desktop, the taskbar or the Driftscape window is back in front. In a browser, `stage.autoPause()`
+does the same with the page's focus and visibility events.
 
 ## 12. Where to tweak
 
 **Without touching code**, edit `web/config.js`: scroll speed, smooth vs. pixel-snapped motion, default frame rate, and
-density multipliers for mountains, villages, towers, rivers, trees and boats. In the Windows app, choose **Reload
-wallpaper** from the tray menu afterwards. In code:
+density multipliers for mountains, villages, towers, rivers, trees and boats. In the Windows app, choose **Reload wallpaper** from the tray menu
+afterwards. In code (each theme file has its own copy of these tables):
 
 | Want to change… | Look at |
 |---|---|
@@ -243,4 +255,4 @@ wallpaper** from the tray menu afterwards. In code:
 | Colours by time of day | `TOD` |
 | Seasonal colours | `SEASONS` |
 | Inscription phrases | `PHRASES` |
-| Resolution presets | `QUALITY` |
+| Resolution presets | `QUALITY` in `core.js` |

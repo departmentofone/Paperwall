@@ -1,9 +1,9 @@
 /*
- * Shan Shui Infinite+ — customisation file.
+ * Driftscape customisation file.
  * Edit the values, save, then use "Reload wallpaper" in the tray menu (or refresh the page).
  * Units: the screen is always 1000 units tall.
  */
-window.SHANSHUI_CONFIG = Object.assign({
+window.DRIFTSCAPE_CONFIG = Object.assign({
 
   // ---- Motion ---------------------------------------------------------------
   baseSpeed: 21,        // scroll speed of the nearest layer, in units/second, at Speed = 1
@@ -23,10 +23,11 @@ window.SHANSHUI_CONFIG = Object.assign({
 
   // ---- Default settings ----------------------------------------------------------
   // Used by the browser / Lively / Wallpaper Engine versions. The Windows app keeps its own
-  // settings in %APPDATA%\ShanShuiWallpaper\settings.ini (changed from the tray menu).
+  // settings in %APPDATA%\Driftscape\settings.ini (changed from the tray menu or the Driftscape window).
   defaults: {
+    theme: 'yugen',     // 'yugen' (Japanese ink) or 'shanshui' (Chinese ink)
     fps: 30,            // frame-rate cap. 30 is smooth for this pace; 60 for high-refresh fans
-    // speed: 1, time: 'auto', season: 'auto', weather: 'auto', style: 'ink', ...
+    // speed: 1, time: 'auto', season: 'auto', weather: 'auto', style: 'sumi', ...
   },
 
-}, window.SHANSHUI_VARIANT || {});
+}, window.DRIFTSCAPE_VARIANT || {});

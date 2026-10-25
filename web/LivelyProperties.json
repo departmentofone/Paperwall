@@ -1,11 +1,11 @@
 {
+  "look": { "type": "dropdown", "value": 2, "text": "Look", "items": ["Shan Shui: Ink", "Shan Shui: Blue-green", "Yūgen: Sumi-e", "Yūgen: Woodcut", "Yūgen: Gold screen", "Yūgen: Ukiyo-e", "Jiangnan: Lines and dots", "Jiangnan: Misty rain", "Jiangnan: Blue and white", "Tabiji: Shin-hanga", "Tabiji: Hiroshige", "Tabiji: Sumi", "Tabiji: Cut paper"] },
   "speed": { "type": "slider", "value": 1, "min": 0.2, "max": 4, "step": 0.1, "text": "Scroll speed" },
   "fps": { "type": "slider", "value": 30, "min": 10, "max": 60, "step": 1, "text": "Frame rate cap" },
   "quality": { "type": "dropdown", "value": 0, "text": "Resolution", "items": ["Auto (build default)", "720p (weak GPUs)", "1080p", "1440p / 2K", "2160p / 4K", "Native"] },
   "time": { "type": "dropdown", "value": 0, "text": "Time of day", "items": ["Follow the clock", "Dawn", "Day", "Dusk", "Night", "Fast day cycle"] },
   "season": { "type": "dropdown", "value": 0, "text": "Season", "items": ["Follow the calendar", "Spring", "Summer", "Autumn", "Winter"] },
-  "weather": { "type": "dropdown", "value": 0, "text": "Weather", "items": ["Automatic", "Clear", "Rain", "Snow"] },
-  "style": { "type": "dropdown", "value": 0, "text": "Style", "items": ["Ink", "Blue-green (qinglu)"] },
+  "weather": { "type": "dropdown", "value": 0, "text": "Weather", "items": ["Automatic", "Clear", "Rain", "Snow", "Falling blossom (Yūgen, Tabiji)"] },
   "birds": { "type": "checkbox", "value": true, "text": "Birds" },
   "mist": { "type": "checkbox", "value": true, "text": "Drifting mist" },
   "inscription": { "type": "checkbox", "value": true, "text": "Inscription and seal" },
