@@ -1,10 +1,10 @@
 /*
- * Driftscape stage: owns the canvas, runs whichever theme is selected and swaps themes with a
+ * Paperwall stage: owns the canvas, runs whichever theme is selected and swaps themes with a
  * crossfade. Shared by the wallpaper page (index.html) and the gallery window (gallery.html).
  */
 (function () {
   'use strict';
-  const D = window.Driftscape;
+  const D = window.Paperwall;
 
   class Stage {
     // container: element the canvas goes into. opts: initial settings (theme, style, seed, ...)

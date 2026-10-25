@@ -5,7 +5,7 @@
 (function () {
   'use strict';
   const { Engine, CW, TAU, clamp, lerp, sstep, hash2, hash4, RNG, vnoise, fbm, rgba, mixc,
-    DL, brush, curve, offsetLine, blob, rect, qbez, interpY, Occ, mkCanvas, dens, P } = window.Driftscape;
+    DL, brush, curve, offsetLine, blob, rect, qbez, interpY, Occ, mkCanvas, dens, P } = window.Paperwall;
 
   // ------------------------------------------------------------------ colour
   const PAPER = [240, 233, 216];
@@ -61,7 +61,6 @@
     [24.0, [58, 66, 96], [76, 82, 108], 1],
   ];
 
-  const PHRASES = ['千里江山', '溪山清远', '万壑松风', '山高水长', '烟雨江南', '松风水月', '云山万里', '高山流水', '江山如画', '寒江独钓', '春山如笑', '秋山明净'];
 
   // ------------------------------------------------------------------ painters
   function texture(dl, rng, st, xs, ys, N, base, h, o) {
@@ -912,32 +911,14 @@
         willow: (x) => rgba(willowC, x * a),
       };
     }
-    // a generated four-character inscription and a red seal stamp
-    _paintInscription() {
-      const k = this.k, fs = Math.round(34 * k), phrase = PHRASES[hash2(this.o.seed, 41) % PHRASES.length];
-      const ins = mkCanvas(Math.round(fs * 1.6), Math.round(fs * (phrase.length * 1.12 + 2.6))), ig = ins.getContext('2d');
-      ig.font = fs + "px KaiTi, STKaiti, 'Kaiti SC', 'SimSun', 'Songti SC', 'Noto Serif CJK SC', serif";
-      ig.textAlign = 'center'; ig.textBaseline = 'top'; ig.fillStyle = rgba(INK, 0.72);
-      for (let i = 0; i < phrase.length; i++) ig.fillText(phrase[i], ins.width / 2, i * fs * 1.12);
-      const ss = Math.round(fs * 1.25), sx = (ins.width - ss) / 2, sy = phrase.length * fs * 1.12 + fs * 0.6, sr = RNG(hash2(this.o.seed, 42));
-      ig.fillStyle = rgba(SEAL_RED, 0.88);
-      ig.beginPath(); ig.moveTo(sx + sr() * 2, sy + sr() * 2); ig.lineTo(sx + ss - sr() * 2, sy + sr() * 2); ig.lineTo(sx + ss - sr() * 2, sy + ss - sr() * 2); ig.lineTo(sx + sr() * 2, sy + ss - sr() * 2); ig.fill();
-      ig.globalCompositeOperation = 'destination-out';
-      ig.font = Math.round(ss * 0.44) + "px KaiTi, STKaiti, 'SimSun', serif";
-      ig.textBaseline = 'middle';
-      ig.fillText('山', sx + ss / 2, sy + ss * 0.28); ig.fillText('水', sx + ss / 2, sy + ss * 0.73);
-      for (let i = 0; i < 40; i++) { ig.beginPath(); ig.arc(sx + sr() * ss, sy + sr() * ss, sr() * ss * 0.025, 0, TAU); ig.fill(); }
-      ig.globalCompositeOperation = 'source-over';
-      return ins;
-    }
   }
   ShanShuiEngine.def = {
     layers: LAYERS, mist: MIST, tod: TOD, paper: PAPER, ink: INK, sun: SEAL_RED,
     styles: ['ink', 'jade'], defaults: { style: 'ink' }, builders: B,
   };
 
-  window.Driftscape.register({
-    id: 'shanshui', name: 'Shan Shui', native: '山水', seal: '山', order: 1,
+  window.Paperwall.register({
+    id: 'shanshui', name: 'Shan Shui', native: '山水', order: 1,
     tagline: 'Chinese ink landscape',
     blurb: 'Misty mountains, river villages and pine groves in the Song-dynasty manner, drawn in grey ink on warm paper.',
     Engine: ShanShuiEngine, paper: '#f0e9d8', ink: '#4e4a46', accent: '#b02620',
@@ -946,6 +927,6 @@
       { id: 'jade', name: 'Blue-green', native: '青绿', blurb: 'Qinglu mineral pigments washed over the peaks', swatch: ['#f0e9d8', '#608c6c', '#3a7674', '#b02620'] },
     ],
     weathers: [{ id: 'auto', name: 'Automatic' }, { id: 'none', name: 'Clear' }, { id: 'rain', name: 'Rain' }, { id: 'snow', name: 'Snow' }],
-    toggles: [{ id: 'birds', name: 'Birds' }, { id: 'mist', name: 'Drifting mist' }, { id: 'inscription', name: 'Inscription and seal' }, { id: 'paper', name: 'Paper texture' }],
+    toggles: [{ id: 'birds', name: 'Birds' }, { id: 'mist', name: 'Drifting mist' }, { id: 'paper', name: 'Paper texture' }],
   });
 })();

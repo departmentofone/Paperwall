@@ -11,7 +11,7 @@
 (function () {
   'use strict';
   const { Engine, CW, TAU, clamp, lerp, sstep, hash2, hash4, RNG, vnoise, fbm, rgba, mixc,
-    DL, brush, curve, blob, rect, interpY, Occ, mkCanvas, P } = window.Driftscape;
+    DL, brush, curve, blob, rect, interpY, Occ, mkCanvas, P } = window.Paperwall;
 
   // ------------------------------------------------------------------ palettes
   const STYLES = {
@@ -69,7 +69,6 @@
     [21.0, [62, 70, 102], [80, 86, 112], 1],
     [24.0, [62, 70, 102], [80, 86, 112], 1],
   ];
-  const PHRASES = ['小桥流水', '烟雨江南', '杏花春雨', '枕河人家', '白墙黛瓦', '水乡人家', '江南好', '春水碧于天', '桨声灯影', '粉墙黛瓦', '柳岸人家'];
 
   // mirror a polygon in the water surface y = w
   const mirror = (p, w) => { const o = new Array(p.length); for (let i = 0; i < p.length; i += 2) { o[i] = p[i]; o[i + 1] = 2 * w - p[i + 1]; } return o; };
@@ -625,32 +624,6 @@
       }
       if (this.moon) this._drawMoon(this.H * 0.028);
     }
-    _paintInscription() {
-      const S = this.S, k = this.k, fs = Math.round(32 * k), phrase = PHRASES[hash2(this.o.seed, 41) % PHRASES.length];
-      const ins = mkCanvas(Math.round(fs * 1.6), Math.round(fs * (phrase.length * 1.12 + 2.7))), ig = ins.getContext('2d');
-      ig.font = fs + "px KaiTi, STKaiti, 'Kaiti SC', 'SimSun', 'Noto Serif CJK SC', serif";
-      ig.textAlign = 'center'; ig.textBaseline = 'top'; ig.fillStyle = rgba(S.ink, 0.75);
-      for (let i = 0; i < phrase.length; i++) ig.fillText(phrase[i], ins.width / 2, i * fs * 1.12);
-      const ss = Math.round(fs * 1.2), sx = (ins.width - ss) / 2, sy = phrase.length * fs * 1.12 + fs * 0.6, sr = RNG(hash2(this.o.seed, 42));
-      ig.fillStyle = rgba(S.seal, 0.9);
-      if (S.mode === 'blue') {
-        // a reign-mark box: two cobalt squares round the characters
-        ig.strokeStyle = rgba(S.seal, 0.9); ig.lineWidth = Math.max(1, ss * 0.05); ig.strokeRect(sx, sy, ss, ss); ig.lineWidth = Math.max(1, ss * 0.025); ig.strokeRect(sx + ss * 0.1, sy + ss * 0.1, ss * 0.8, ss * 0.8);
-        ig.font = Math.round(ss * 0.3) + "px KaiTi, 'SimSun', serif"; ig.textBaseline = 'middle';
-        ig.fillText('江', sx + ss * 0.5, sy + ss * 0.33); ig.fillText('南', sx + ss * 0.5, sy + ss * 0.67);
-        return ins;
-      }
-      ig.fillRect(sx, sy, ss, ss);
-      ig.globalCompositeOperation = 'destination-out';
-      ig.font = Math.round(ss * 0.44) + "px KaiTi, STKaiti, 'SimSun', serif"; ig.textBaseline = 'middle';
-      ig.fillText('江', sx + ss / 2, sy + ss * 0.28); ig.fillText('南', sx + ss / 2, sy + ss * 0.73);
-      for (let i = 0; i < 40; i++) { ig.beginPath(); ig.arc(sx + sr() * ss, sy + sr() * ss, sr() * ss * 0.025, 0, TAU); ig.fill(); }
-      ig.globalCompositeOperation = 'source-over';
-      return ins;
-    }
-    _drawInscription() {
-      if (this.inscr) this.ctx.drawImage(this.inscr, Math.round(52 * this.k), Math.round(64 * this.k));
-    }
     // Swallows: small forked silhouettes darting low over the water in loose pairs.
     _birds(dt) {
       const ctx = this.ctx, k = this.k;
@@ -688,8 +661,8 @@
     styles: Object.keys(STYLES), defaults: { style: 'wu' }, builders: B, styleSprites: true, weathers: ['none', 'rain', 'snow'],
   };
 
-  window.Driftscape.register({
-    id: 'jiangnan', name: 'Jiangnan', native: '江南', seal: '江', order: 3,
+  window.Paperwall.register({
+    id: 'jiangnan', name: 'Jiangnan', native: '江南', order: 3,
     tagline: 'Chinese canal town',
     blurb: 'White walls and black tiles along a canal, stepped gables, arched bridges and willows, every house doubled in the water.',
     Engine: JiangnanEngine, paper: '#f9f8f3', ink: '#16161a', accent: '#c42c24',
@@ -699,6 +672,6 @@
       { id: 'qinghua', name: 'Blue and white', native: '青花', blurb: 'The whole town painted in cobalt on porcelain', swatch: ['#f6f8fa', '#a8bade', '#1e3a82', '#2c4a9c'] },
     ],
     weathers: [{ id: 'auto', name: 'Automatic' }, { id: 'none', name: 'Clear' }, { id: 'rain', name: 'Rain' }, { id: 'snow', name: 'Snow' }],
-    toggles: [{ id: 'birds', name: 'Swallows' }, { id: 'mist', name: 'Mist' }, { id: 'inscription', name: 'Inscription and seal' }, { id: 'paper', name: 'Paper texture' }],
+    toggles: [{ id: 'birds', name: 'Swallows' }, { id: 'mist', name: 'Mist' }, { id: 'paper', name: 'Paper texture' }],
   });
 })();

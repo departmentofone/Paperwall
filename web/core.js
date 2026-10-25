@@ -1,5 +1,5 @@
 /*
- * Driftscape core: the shared machinery behind every living wallpaper theme.
+ * Paperwall core: the shared machinery behind every living wallpaper theme.
  *
  * Performance model
  *   - The world is split into parallax layers, each cut into fixed-width chunks.
@@ -11,7 +11,7 @@
  *     resize only re-rasterises chunks; it never regenerates the scene.
  *
  * A theme (web/themes/*.js) supplies the painters and the scene recipe, then calls
- * Driftscape.register({...}) so the page, the gallery and the tray menu can find it.
+ * Paperwall.register({...}) so the page, the gallery and the tray menu can find it.
  */
 (function () {
   'use strict';
@@ -183,13 +183,13 @@
   // Options every theme understands. A theme adds its own defaults (style, ...) in def.defaults.
   const DEFAULTS = {
     seed: 0, speed: 1, fps: 30, quality: 'auto', time: 'auto', season: 'auto', weather: 'auto',
-    style: '', color: 0.35, birds: true, mist: true, inscription: true, paper: true, hud: false,
+    style: '', color: 0.35, birds: true, mist: true, paper: true, hud: false,
   };
   // Resolution presets cap the internal canvas HEIGHT (width follows the screen), so 21:9 and
-  // 32:9 monitors get the same sharpness as 16:9 at the same preset. 'auto' comes from the
-  // build variant (web/config.js) and defaults to 1440.
+  // 32:9 monitors get the same sharpness as 16:9 at the same preset. 'auto' renders at the
+  // screen's own height, up to 4K (config.js can lower it with autoHeight).
   const QUALITY = { low: 720, '1080p': 1080, '1440p': 1440, '4k': 2160, native: Infinity, medium: 900, high: 1080, ultra: Infinity };
-  const CONFIG = window.DRIFTSCAPE_CONFIG || window.SHANSHUI_CONFIG || {};
+  const CONFIG = window.PAPERWALL_CONFIG || window.SHANSHUI_CONFIG || {};
   // density multiplier from config.js (1 = default); P() scales a probability by it
   const dens = (k) => (CONFIG.density && CONFIG.density[k] != null ? +CONFIG.density[k] : 1);
   const P = (p, k) => Math.min(1, p * dens(k));
@@ -266,7 +266,7 @@
     resize() {
       const cssW = Math.max(1, this.canvas.clientWidth || window.innerWidth), cssH = Math.max(1, this.canvas.clientHeight || window.innerHeight);
       const dpr = Math.min(window.devicePixelRatio || 1, 3);
-      const maxH = QUALITY[this.o.quality] || CONFIG.autoHeight || 1440;
+      const maxH = QUALITY[this.o.quality] || CONFIG.autoHeight || 2160;
       const scale = Math.min(1, maxH / (cssH * dpr));
       const W = Math.round(cssW * dpr * scale), H = Math.round(cssH * dpr * scale);
       if (W === this.W && H === this.H) return;
@@ -371,7 +371,6 @@
       gr.addColorStop(0, 'rgba(255,214,140,0.95)'); gr.addColorStop(0.25, 'rgba(255,170,80,0.45)'); gr.addColorStop(1, 'rgba(255,140,60,0)');
       gg.fillStyle = gr; gg.fillRect(0, 0, 64, 64);
       this.glow = gl;
-      this.inscr = this._paintInscription();
       this.todKey = '';
     }
     // Default mist: soft paper-coloured radial blobs, tiled seamlessly across the strip width.
@@ -403,7 +402,6 @@
       }
       return tile;
     }
-    _paintInscription() { return null; }
 
     // ---------- time of day
     _hour() {
@@ -642,9 +640,6 @@
       g.fillStyle = pat;
       g.fillRect(0, y * s, this.W * s, this.mist[idx].height * s);
     }
-    _drawInscription() {
-      if (this.inscr) this.ctx.drawImage(this.inscr, Math.round(this.W - this.inscr.width - 46 * this.k), Math.round(56 * this.k));
-    }
     render(dt) {
       const ctx = this.ctx, MIST = this.def.mist;
       this._tod();
@@ -659,7 +654,6 @@
         if (this.o.mist) for (let m = 0; m < MIST.length; m++) if (MIST[m].after === i) { this._drawMist(MIST[m], m); if (lit > 0) this._lightsMist(MIST[m], m); }
       }
       this._birds(dt);
-      if (this.o.inscription) this._drawInscription();
       ctx.globalCompositeOperation = 'multiply';
       ctx.drawImage(this.overlay, 0, 0);
       if (lit > 0) {
@@ -784,7 +778,7 @@
   }
   const theme = (id) => themes.find((t) => t.id === id) || themes.find((t) => t.id === (CONFIG.defaults || {}).theme) || themes[0];
 
-  window.Driftscape = {
+  window.Paperwall = {
     Engine, DEFAULTS, CONFIG, CW, register, themes, theme,
     // painter toolkit for themes
     TAU, clamp, lerp, sstep, h32, hash2, hash4, RNG, vnoise, fbm, rgba, mixc,

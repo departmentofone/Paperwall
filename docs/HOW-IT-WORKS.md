@@ -1,4 +1,4 @@
-# How Driftscape works
+# How Paperwall works
 
 This is a tour of how the landscapes are generated and drawn, and how they end up behind your desktop icons.
 The examples come from the Shan Shui theme; Yūgen uses the same machinery with its own scene recipe and painters.
@@ -9,11 +9,11 @@ The examples come from the Shan Shui theme; Yūgen uses the same machinery with 
 | **Themes** | `web/themes/*.js` | Each one subclasses the engine and supplies the scene recipe and painters |
 | **Stage** | `web/stage.js` | Runs the chosen theme and crossfades when you switch |
 | **Pages** | `web/index.html`, `web/gallery.html` | The wallpaper itself, and the settings window with live previews |
-| **Host** | `host/Driftscape.cs` | A small Windows app. It puts the page behind your icons, adds the tray menu and the settings window, and pauses when you can't see it |
+| **Host** | `host/Paperwall.cs` | A small Windows app. It puts the page behind your icons, adds the tray menu and the settings window, and pauses when you can't see it |
 
 ```mermaid
 flowchart LR
-  subgraph Host["Driftscape.exe (C#)"]
+  subgraph Host["Paperwall.exe (C#)"]
     T[Tray menu + settings.ini] --> M[Messages]
     G[Settings window<br/>gallery.html] --> M
     O[Focus / occlusion / battery / lock watcher] --> M
@@ -170,13 +170,12 @@ slightly brighter than the paper. This project follows the same rules:
 
 ## 8. One frame, in order
 
-1. Sky gradient, then the sun (a red seal-like disc) or the moon, drawn with its **real phase** for today's date.
+1. Sky gradient, then the sun (a red disc) or the moon, drawn with its **real phase** for today's date.
 2. For each layer: blit its chunks, then any mist bands that belong after it.
 3. Birds: flocks of flapping V-strokes, drawn live.
-4. Inscription (a four-character phrase picked by the seed) and the red seal.
-5. **Overlay, multiplied over everything**: the time-of-day tint, a moon glow, paper grain and a vignette.
+4. **Overlay, multiplied over everything**: the time-of-day tint, a moon glow, paper grain and a vignette.
    It is prebuilt into one bitmap and only rebuilt when the light changes.
-6. Night lights, then rain or snow. Lights are depth-correct at two levels:
+5. Night lights, then rain or snow. Lights are depth-correct at two levels:
    - **Within a layer**, each chunk bakes a *light map* in the same painter's order as its colour. A lantern is added when its
      house is painted, and everything painted afterwards (a nearer bank, a hill in front) erases the light behind its shape.
    - **Between layers**, the per-layer light strips are combined back to front in a half-resolution buffer. Each nearer layer's
@@ -237,7 +236,7 @@ The host talks to the page with WebView2 messages such as `{"type":"set","key":"
 Lively and Wallpaper Engine reach the same `stage.set()` through their own callbacks.
 
 The host also checks which window is in front every half second. If another app has been in front for 1.5 seconds, the
-wallpaper pauses until the desktop, the taskbar or the Driftscape window is back in front. In a browser, `stage.autoPause()`
+wallpaper pauses until the desktop, the taskbar or the Paperwall window is back in front. In a browser, `stage.autoPause()`
 does the same with the page's focus and visibility events.
 
 ## 12. Where to tweak
@@ -254,5 +253,4 @@ afterwards. In code (each theme file has its own copy of these tables):
 | How a specific thing is drawn | `B.*` builders and painter functions (`pine`, `house`, `mtnBody`, …) |
 | Colours by time of day | `TOD` |
 | Seasonal colours | `SEASONS` |
-| Inscription phrases | `PHRASES` |
 | Resolution presets | `QUALITY` in `core.js` |

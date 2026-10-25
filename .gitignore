@@ -2,7 +2,6 @@
 dist/
 release/
 host/packages/
-host/app.ico
 
 # local tooling
 .claude/

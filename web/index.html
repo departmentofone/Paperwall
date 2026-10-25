@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Driftscape</title>
+<title>Paperwall</title>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #f0e9d8; }
   canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; opacity: 0; transition: opacity .9s cubic-bezier(0.23, 1, 0.32, 1); } /* strong ease-out: quick to appear, gentle to settle */
@@ -17,7 +17,6 @@
 </head>
 <body>
 <div id="help" class="hide"></div>
-<script src="variant.js"></script>
 <script src="config.js"></script>
 <script src="core.js"></script>
 <script src="themes/shanshui.js"></script>
@@ -30,10 +29,10 @@
   'use strict';
   const q = new URLSearchParams(location.search);
   const opts = {};
-  for (const k of Object.keys(Driftscape.DEFAULTS).concat(['theme'])) if (q.has(k)) opts[k] = q.get(k);
+  for (const k of Object.keys(Paperwall.DEFAULTS).concat(['theme'])) if (q.has(k)) opts[k] = q.get(k);
   const native = !!(window.chrome && chrome.webview);
-  const stage = new Driftscape.Stage(document.body, opts, { fade: !q.has('nofade') });
-  window.driftscape = stage;
+  const stage = new Paperwall.Stage(document.body, opts, { fade: !q.has('nofade') });
+  window.paperwall = stage;
   Object.defineProperty(window, 'shanshui', { get: () => stage.eng }); // old console handle
 
   // Pause on its own when the window loses focus (browser preview). The wallpaper is never
@@ -49,7 +48,7 @@
       else if (m.type === 'set') stage.set(m.key, m.value);
       else if (m.type === 'config') stage.config(m.value);
     });
-    chrome.webview.postMessage({ type: 'ready', themes: Driftscape.manifest() });
+    chrome.webview.postMessage({ type: 'ready', themes: Paperwall.manifest() });
   }
 
   // ---- Lively Wallpaper (LivelyProperties.json). "look" is one list of every theme + style.
@@ -60,7 +59,7 @@
     quality: ['auto', 'low', '1080p', '1440p', '4k', 'native'],
   };
   const LOOKS = [];
-  for (const t of Driftscape.themes) for (const s of t.styles) LOOKS.push([t.id, s.id]);
+  for (const t of Paperwall.themes) for (const s of t.styles) LOOKS.push([t.id, s.id]);
   window.livelyPropertyListener = function (name, val) {
     if (name === 'newScene') { stage.set('seed', (Math.random() * 1e9) | 0); return; }
     if (name === 'look') { const l = LOOKS[val] || LOOKS[0]; stage.config({ theme: l[0], style: l[1] }); return; }
@@ -96,7 +95,7 @@
     else if (k === 'n') { stage.set('seed', (Math.random() * 1e9) | 0); toast('seed ' + stage.get('seed')); }
     else if (k === '+' || k === '=') { stage.set('speed', Math.min(8, stage.get('speed') * 1.5)); toast('speed ' + stage.get('speed').toFixed(2)); }
     else if (k === '-') { stage.set('speed', Math.max(0.1, stage.get('speed') / 1.5)); toast('speed ' + stage.get('speed').toFixed(2)); }
-    else if (k === 'v') { const l = Driftscape.themes.map((t) => t.id); stage.set('theme', l[(l.indexOf(th.id) + 1) % l.length]); toast(stage.theme.name + ' / ' + stage.get('style')); }
+    else if (k === 'v') { const l = Paperwall.themes.map((t) => t.id); stage.set('theme', l[(l.indexOf(th.id) + 1) % l.length]); toast(stage.theme.name + ' / ' + stage.get('style')); }
     else if (k === 'j') cycleList('style', th.styles.map((s) => s.id));
     else if (k === 't') cycleList('time', LISTS.time);
     else if (k === 's') cycleList('season', LISTS.season);

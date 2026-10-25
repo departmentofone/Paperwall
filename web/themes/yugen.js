@@ -11,7 +11,7 @@
 (function () {
   'use strict';
   const { Engine, CW, TAU, clamp, lerp, sstep, hash2, hash4, RNG, vnoise, fbm, rgba, mixc,
-    DL, brush, curve, blob, rect, qbez, interpY, Occ, mkCanvas, dens, P } = window.Driftscape;
+    DL, brush, curve, blob, rect, qbez, interpY, Occ, mkCanvas, dens, P } = window.Paperwall;
 
   // ------------------------------------------------------------------ palettes
   // mode: how land is painted. 'wet' graded ink washes, 'line' hatching, 'mineral' pigment
@@ -87,7 +87,6 @@
     [21.0, [62, 70, 102], [80, 86, 112], 1],
     [24.0, [62, 70, 102], [80, 86, 112], 1],
   ];
-  const PHRASES = ['山紫水明', '花鳥風月', '風光明媚', '行雲流水', '明鏡止水', '白砂青松', '柳緑花紅', '一期一会', '雪月花', '春風駘蕩', '月下美人', '松風'];
 
   // ------------------------------------------------------------------ small helpers
   const along = (p, t) => { const n = p.length >> 1, i = clamp(Math.round(t * (n - 1)), 0, n - 1); return [p[i * 2], p[i * 2 + 1]]; };
@@ -1063,29 +1062,6 @@
       }
       if (this.moon) this._drawMoon(this.H * (S.mode === 'line' ? 0.05 : 0.032));
     }
-    _drawInscription() {
-      if (!this.inscr) return;
-      const x = this.S.sun && this.S.sun.r > 0.1 ? 52 * this.k : this.W - this.inscr.width - 46 * this.k;
-      this.ctx.drawImage(this.inscr, Math.round(x), Math.round(56 * this.k));
-    }
-    _paintInscription() {
-      const S = this.S, k = this.k, fs = Math.round(30 * k), phrase = PHRASES[hash2(this.o.seed, 41) % PHRASES.length];
-      const ins = mkCanvas(Math.round(fs * 1.6), Math.round(fs * (phrase.length * 1.14 + 2.7))), ig = ins.getContext('2d');
-      ig.font = fs + "px 'Yu Mincho', 'YuMincho', 'Hiragino Mincho ProN', 'MS Mincho', 'Noto Serif CJK JP', serif";
-      ig.textAlign = 'center'; ig.textBaseline = 'top'; ig.fillStyle = rgba(S.mode === 'flat' ? [34, 40, 58] : S.ink, 0.78);
-      for (let i = 0; i < phrase.length; i++) ig.fillText(phrase[i], ins.width / 2, i * fs * 1.14);
-      // a round-cornered hanko seal
-      const ss = Math.round(fs * 1.2), sx = (ins.width - ss) / 2, sy = phrase.length * fs * 1.14 + fs * 0.7, sr = RNG(hash2(this.o.seed, 42)), rr = ss * 0.18;
-      ig.fillStyle = rgba(S.accent, 0.9);
-      ig.beginPath(); ig.moveTo(sx + rr, sy); ig.arcTo(sx + ss, sy, sx + ss, sy + ss, rr); ig.arcTo(sx + ss, sy + ss, sx, sy + ss, rr); ig.arcTo(sx, sy + ss, sx, sy, rr); ig.arcTo(sx, sy, sx + ss, sy, rr); ig.fill();
-      ig.globalCompositeOperation = 'destination-out';
-      ig.font = 'bold ' + Math.round(ss * 0.62) + "px 'Yu Mincho', 'MS Mincho', serif";
-      ig.textBaseline = 'middle';
-      ig.fillText('幽', sx + ss / 2, sy + ss * 0.54);
-      for (let i = 0; i < 36; i++) { ig.beginPath(); ig.arc(sx + sr() * ss, sy + sr() * ss, sr() * ss * 0.025, 0, TAU); ig.fill(); }
-      ig.globalCompositeOperation = 'source-over';
-      return ins;
-    }
     // Cranes: long necks and trailing legs; slow, deep wingbeats.
     _birds(dt) {
       const ctx = this.ctx, k = this.k;
@@ -1127,8 +1103,8 @@
     styles: Object.keys(STYLES), defaults: { style: 'sumi' }, builders: B, styleSprites: true, weathers: ['none', 'petals', 'rain', 'snow'],
   };
 
-  window.Driftscape.register({
-    id: 'yugen', name: 'Yūgen', native: '幽玄', seal: '幽', order: 2,
+  window.Paperwall.register({
+    id: 'yugen', name: 'Yūgen', native: '幽玄', order: 2,
     tagline: 'Japanese ink landscape',
     blurb: 'Snow-capped cones, Kano-school crags, black pines, thatched villages and torii in the shallows, with cranes drifting past.',
     Engine: YugenEngine, paper: '#f6f3ec', ink: '#1e1d20', accent: '#c42c24',
@@ -1139,6 +1115,6 @@
       { id: 'ukiyoe', name: 'Ukiyo-e', native: '浮世絵', blurb: 'Prussian-blue bokashi skies and flat woodblock colour', swatch: ['#eee4cc', '#5c8aaa', '#2c4a7c', '#c8422e'] },
     ],
     weathers: [{ id: 'auto', name: 'Automatic' }, { id: 'none', name: 'Clear' }, { id: 'petals', name: 'Falling blossom' }, { id: 'rain', name: 'Rain' }, { id: 'snow', name: 'Snow' }],
-    toggles: [{ id: 'birds', name: 'Cranes' }, { id: 'mist', name: 'Cloud bands' }, { id: 'inscription', name: 'Inscription and seal' }, { id: 'paper', name: 'Paper texture' }],
+    toggles: [{ id: 'birds', name: 'Cranes' }, { id: 'mist', name: 'Cloud bands' }, { id: 'paper', name: 'Paper texture' }],
   });
 })();

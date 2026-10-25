@@ -13,7 +13,7 @@
 (function () {
   'use strict';
   const { Engine, CW, TAU, clamp, lerp, sstep, hash2, hash4, RNG, vnoise, fbm, rgba, mixc,
-    DL, brush, curve, blob, rect, interpY, Occ, mkCanvas, P } = window.Driftscape;
+    DL, brush, curve, blob, rect, interpY, Occ, mkCanvas, P } = window.Paperwall;
 
   const STYLES = {
     shinhanga: {
@@ -71,9 +71,6 @@
     [21.0, [62, 70, 102], [80, 86, 112], 1],
     [24.0, [62, 70, 102], [80, 86, 112], 1],
   ];
-  // print titles: a station of the road and a mood, like the cartouche on a Hiroshige sheet
-  const STATIONS = ['日本橋', '品川', '川崎', '保土ヶ谷', '大磯', '小田原', '箱根', '三島', '蒲原', '由比', '鞠子', '岡部', '島田', '日坂', '袋井', '見附', '御油', '赤坂', '宮', '桑名', '庄野', '亀山', '関', '土山', '大津'];
-  const MOODS = ['夜之雪', '白雨', '夜之雨', '朝之景', '春之道', '秋之月', '雪晴', '夕照', '宿場', '旅籠'];
 
   // ------------------------------------------------------------------ painting helpers
   function edge(dl, rng, st, pts, a, w) {
@@ -655,28 +652,6 @@
       if (S.mode !== 'cut') for (let i = 0; i < 50; i++) { const y = rng() * T; tg.strokeStyle = 'rgba(120,100,80,' + rng.range(0.025, 0.06).toFixed(3) + ')'; tg.lineWidth = rng.range(0.5, 1.4); tg.beginPath(); tg.moveTo(0, y); for (let x = 0; x <= T; x += 16) tg.lineTo(x, y + 2 * Math.sin(x / 40 + i)); tg.stroke(); }
       return tile;
     }
-    // A print's title cartouche: a coloured slip with the station name and a smaller one beside it.
-    _paintInscription() {
-      const S = this.S, k = this.k, fs = Math.round(26 * k);
-      const st = STATIONS[hash2(this.o.seed, 41) % STATIONS.length], mood = MOODS[hash2(this.o.seed, 43) % MOODS.length];
-      const font = (px) => px + "px 'Yu Mincho', 'YuMincho', 'Hiragino Mincho ProN', 'MS Mincho', serif";
-      const w1 = Math.round(fs * 1.7), h1 = Math.round(fs * (st.length * 1.12 + 0.9)), w2 = Math.round(fs * 1.3), h2 = Math.round(fs * 0.86 * (mood.length * 1.12 + 0.9));
-      const ins = mkCanvas(w1 + w2 + Math.round(fs * 0.3), Math.max(h1, h2) + 4), g = ins.getContext('2d');
-      const fill = S.mode === 'cut' ? [250, 240, 220] : S.mode === 'ink' ? [250, 248, 242] : S.mode === 'flat' ? [196, 58, 44] : [214, 190, 140];
-      const txt = S.mode === 'flat' ? [250, 244, 230] : S.ink;
-      const slip = (x, w, h, text, size) => {
-        g.fillStyle = rgba(fill, 0.95); g.fillRect(x, 2, w, h);
-        g.strokeStyle = rgba(S.ink, 0.8); g.lineWidth = Math.max(1, k * 1.2); g.strokeRect(x + 0.5, 2.5, w - 1, h - 1);
-        g.fillStyle = rgba(txt, 0.92); g.font = font(size); g.textAlign = 'center'; g.textBaseline = 'top';
-        for (let i = 0; i < text.length; i++) g.fillText(text[i], x + w / 2, 2 + size * 0.45 + i * size * 1.12);
-      };
-      slip(w2 + Math.round(fs * 0.3), w1, h1, st, fs);
-      slip(0, w2, h2, mood, Math.round(fs * 0.86));
-      return ins;
-    }
-    _drawInscription() {
-      if (this.inscr) this.ctx.drawImage(this.inscr, Math.round(this.W - this.inscr.width - 40 * this.k), Math.round(40 * this.k));
-    }
     // Rain: long straight lines (the Hiroshige way) for the prints; snow and blossom as usual.
     _weather(dt) {
       if (this.reduceMotion || this.weather === 'none') return;
@@ -705,8 +680,8 @@
     styles: Object.keys(STYLES), defaults: { style: 'shinhanga' }, builders: B, styleSprites: true, weathers: ['none', 'petals', 'rain', 'snow'],
   };
 
-  window.Driftscape.register({
-    id: 'tabiji', name: 'Tabiji', native: '旅路', seal: '旅', order: 4,
+  window.Paperwall.register({
+    id: 'tabiji', name: 'Tabiji', native: '旅路', order: 4,
     tagline: 'Japanese post road',
     blurb: 'A village street on the old highway: shopfronts and inns, a teahouse parasol, shrine gates, roadside pines and travellers passing.',
     Engine: TabijiEngine, paper: '#f0eadc', ink: '#2e2624', accent: '#d24c32',
@@ -717,6 +692,6 @@
       { id: 'kirie', name: 'Cut paper', native: '切り絵', blurb: 'Layered paper silhouettes with glowing cut-out windows', swatch: ['#f6e2ba', '#7c6a74', '#120e16', '#be3028'] },
     ],
     weathers: [{ id: 'auto', name: 'Automatic' }, { id: 'none', name: 'Clear' }, { id: 'petals', name: 'Falling blossom' }, { id: 'rain', name: 'Rain' }, { id: 'snow', name: 'Snow' }],
-    toggles: [{ id: 'birds', name: 'Birds' }, { id: 'mist', name: 'Mist' }, { id: 'inscription', name: 'Title cartouche' }, { id: 'paper', name: 'Paper texture' }],
+    toggles: [{ id: 'birds', name: 'Birds' }, { id: 'mist', name: 'Mist' }, { id: 'paper', name: 'Paper texture' }],
   });
 })();

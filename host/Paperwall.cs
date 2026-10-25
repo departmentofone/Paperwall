@@ -1,4 +1,4 @@
-// Driftscape: native Windows desktop-wallpaper host.
+// Paperwall: native Windows desktop-wallpaper host.
 // Hosts web\index.html in WebView2 behind the desktop icons, one window per monitor, and
 // web\gallery.html in a normal window for browsing themes and settings.
 // Written for the C# 5 compiler that ships with .NET Framework 4.x (no SDK needed).
@@ -7,8 +7,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Text;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -20,21 +18,22 @@ using Microsoft.Win32;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
-namespace Driftscape
+namespace Paperwall
 {
     static class Program
     {
-        public const string Name = "Driftscape";
-        public const string VirtualHost = "driftscape.example";
+        public const string Name = "Paperwall";
+        public const string VirtualHost = "paperwall.example";
 
         [STAThread]
         static void Main()
         {
             bool fresh;
-            using (var mutex = new Mutex(true, "Local\\Driftscape", out fresh))
+            using (var mutex = new Mutex(true, "Local\\Paperwall", out fresh))
             {
-                if (!fresh) { Native.PostMessage(new IntPtr(0xffff), Native.RegisterWindowMessage("Driftscape.Open"), IntPtr.Zero, IntPtr.Zero); return; }
+                if (!fresh) { Native.PostMessage(new IntPtr(0xffff), Native.RegisterWindowMessage("Paperwall.Open"), IntPtr.Zero, IntPtr.Zero); return; }
                 try { Native.SetProcessDpiAwarenessContext(new IntPtr(-4)); } catch { } // per-monitor v2
+                Autostart.Migrate();
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new Host());
@@ -45,10 +44,11 @@ namespace Driftscape
     // ------------------------------------------------------------------ settings
     class Settings
     {
-        public static readonly string Dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Driftscape");
-        static readonly string OldDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ShanShuiWallpaper");
+        public static readonly string Dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Paperwall");
+        // the app's earlier names, newest first; their settings carry over on first run
+        static readonly string[] OldDirs = { "Driftscape", "ShanShuiWallpaper" };
         // settings the page understands (style is sent separately, per theme)
-        public static readonly string[] PageKeys = { "speed", "quality", "time", "season", "weather", "birds", "inscription", "mist", "paper" };
+        public static readonly string[] PageKeys = { "speed", "quality", "time", "season", "weather", "birds", "mist", "paper" };
         readonly Dictionary<string, string> v = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         readonly string path = Path.Combine(Dir, "settings.ini");
 
@@ -57,14 +57,16 @@ namespace Driftscape
             string[][] defaults = {
                 new[] { "seed", "0" }, new[] { "theme", "yugen" }, new[] { "speed", "1" }, new[] { "fps", "30" }, new[] { "quality", "auto" },
                 new[] { "time", "auto" }, new[] { "season", "auto" }, new[] { "weather", "auto" },
-                new[] { "birds", "true" }, new[] { "inscription", "true" }, new[] { "mist", "true" }, new[] { "paper", "true" },
+                new[] { "birds", "true" }, new[] { "mist", "true" }, new[] { "paper", "true" },
                 new[] { "pauseFullscreen", "true" }, new[] { "pauseMaximized", "true" }, new[] { "pauseUnfocused", "true" }, new[] { "batteryFps", "15" },
             };
             foreach (var d in defaults) v[d[0]] = d[1];
             try
             {
                 Directory.CreateDirectory(Dir);
-                string src = File.Exists(path) ? path : Path.Combine(OldDir, "settings.ini"); // carry over Shan Shui Infinite+ settings
+                string src = path;
+                foreach (string old in OldDirs)
+                    if (!File.Exists(src)) src = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), old, "settings.ini");
                 if (File.Exists(src))
                     foreach (string line in File.ReadAllLines(src))
                     {
@@ -100,7 +102,6 @@ namespace Driftscape
     {
         public string Id, Name, Native, Tagline, DefaultStyle;
         public List<string[]> Styles = new List<string[]>(), Weathers = new List<string[]>(), Toggles = new List<string[]>();
-        public string Seal = "景";
 
         public static List<ThemeInfo> Parse(object list)
         {
@@ -113,7 +114,6 @@ namespace Driftscape
                 if (d == null) continue;
                 var t = new ThemeInfo { Id = S(d, "id"), Name = S(d, "name"), Native = S(d, "native"), Tagline = S(d, "tagline"), DefaultStyle = S(d, "defaultStyle") };
                 Pairs(d, "styles", t.Styles); Pairs(d, "weathers", t.Weathers); Pairs(d, "toggles", t.Toggles);
-                if (t.Native.Length > 0) t.Seal = t.Native.Substring(0, 1);
                 if (t.Id.Length > 0) res.Add(t);
             }
             return res;
@@ -156,7 +156,8 @@ namespace Driftscape
             seed = cfg.Int("seed", 0);
             if (seed <= 0) { seed = new Random().Next(1, 1000000000); cfg["seed"] = seed.ToString(CultureInfo.InvariantCulture); }
 
-            tray.Icon = MakeIcon("景");
+            tray.Icon = TrayIcon();
+            Microsoft.Win32.SystemEvents.UserPreferenceChanged += delegate { UpdateIcon(); };
             tray.Text = Program.Name;
             tray.ContextMenuStrip = new ContextMenuStrip();
             tray.ContextMenuStrip.Opening += delegate { FillMenu(tray.ContextMenuStrip); };
@@ -215,7 +216,7 @@ namespace Driftscape
             {
                 foreach (var w in walls) { try { w.Dispose(); } catch { } }
                 walls.Clear();
-                if (!Directory.Exists(webDir)) { Fail("The 'web' folder was not found next to Driftscape.exe."); return; }
+                if (!Directory.Exists(webDir)) { Fail("The 'web' folder was not found next to Paperwall.exe."); return; }
                 if (!Desktop.Find())
                     tray.ShowBalloonTip(4000, Program.Name, "Couldn't reach the desktop layer, so the wallpaper is running as a bottom-most window instead.", ToolTipIcon.Warning);
                 if (!await EnsureEnv()) return;
@@ -240,7 +241,7 @@ namespace Driftscape
                 "--disable-features=Translate,msSmartScreenProtection,msEdgeEnhanceImagesEnabled");
             try
             {
-                env = await CoreWebView2Environment.CreateAsync(null, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Driftscape", "WebView2"), opts);
+                env = await CoreWebView2Environment.CreateAsync(null, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Paperwall", "WebView2"), opts);
                 return true;
             }
             catch (WebView2RuntimeNotFoundException)
@@ -439,11 +440,11 @@ namespace Driftscape
             if (cur != null && cur.Weathers.Count > 0) m.Items.Add(Choice("Weather", "weather", cur.Weathers, cfg["weather"]));
             else m.Items.Add(Choice("Weather", "weather", new[] { "Automatic|auto", "Clear|none", "Rain|rain", "Snow|snow" }));
             m.Items.Add(new ToolStripSeparator());
-            m.Items.Add(Choice("Resolution", "quality", new[] { "Auto (this build's default)|auto", "720p (weak GPUs)|low", "1080p|1080p", "1440p / 2K|1440p", "2160p / 4K|4k", "Native (any size)|native" }));
+            m.Items.Add(Choice("Resolution", "quality", new[] { "Auto (matches your screen)|auto", "720p (weak GPUs)|low", "1080p|1080p", "1440p / 2K|1440p", "2160p / 4K|4k", "Native (any size)|native" }));
             m.Items.Add(Choice("Frame rate", "fps", new[] { "15 fps (lightest)|15", "24 fps|24", "30 fps|30", "60 fps|60" }));
             var opts = new ToolStripMenuItem("Options");
             if (cur != null && cur.Toggles.Count > 0) foreach (var tg in cur.Toggles) opts.DropDownItems.Add(Toggle(tg[1], tg[0]));
-            else { opts.DropDownItems.Add(Toggle("Birds", "birds")); opts.DropDownItems.Add(Toggle("Drifting mist", "mist")); opts.DropDownItems.Add(Toggle("Inscription and seal", "inscription")); opts.DropDownItems.Add(Toggle("Paper texture", "paper")); }
+            else { opts.DropDownItems.Add(Toggle("Birds", "birds")); opts.DropDownItems.Add(Toggle("Drifting mist", "mist")); opts.DropDownItems.Add(Toggle("Paper texture", "paper")); }
             opts.DropDownItems.Add(new ToolStripSeparator());
             opts.DropDownItems.Add(Toggle("Pause when another app is in front", "pauseUnfocused"));
             opts.DropDownItems.Add(Toggle("Pause behind fullscreen apps", "pauseFullscreen"));
@@ -501,32 +502,28 @@ namespace Driftscape
         {
             var t = Current;
             var old = tray.Icon;
-            tray.Icon = MakeIcon(t != null ? t.Seal : "景");
+            tray.Icon = TrayIcon();
             tray.Text = Program.Name + (t != null ? " - " + t.Name : "");
-            if (old != null) { Native.DestroyIcon(old.Handle); old.Dispose(); }
+            if (old != null) old.Dispose();
         }
 
-        // A red seal with the theme's character (山 for Shan Shui, 幽 for Yugen).
-        public static Icon MakeIcon(string glyph)
+        // The app icon from the exe's resources. The tray gets the paper-coloured tile on a dark
+        // taskbar and the ink tile on a light one, so it reads on both.
+        public static Icon AppIcon(bool light, Size size)
         {
-            var bmp = new Bitmap(32, 32);
-            using (var g = Graphics.FromImage(bmp))
+            using (var st = typeof(Host).Assembly.GetManifestResourceStream(light ? "Paperwall.light.ico" : "Paperwall.ico"))
+                return new Icon(st, size);
+        }
+        static Icon TrayIcon()
+        {
+            bool lightTaskbar = false;
+            try
             {
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-                g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-                g.Clear(Color.Transparent);
-                using (var path = Native.RoundRect(new RectangleF(2, 2, 28, 28), 5))
-                using (var b = new SolidBrush(Color.FromArgb(176, 38, 32))) g.FillPath(b, path);
-                string family = "Microsoft YaHei";
-                foreach (string f in new[] { "Yu Mincho", "KaiTi", "SimSun", "Microsoft YaHei" })
-                    try { using (new FontFamily(f)) { family = f; break; } } catch { }
-                using (var font = new Font(family, 19, FontStyle.Bold, GraphicsUnit.Pixel))
-                using (var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
-                    g.DrawString(glyph, font, Brushes.White, new RectangleF(0, 1, 32, 32), sf);
+                using (var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
+                    lightTaskbar = k != null && Convert.ToInt32(k.GetValue("SystemUsesLightTheme", 0)) == 1;
             }
-            var icon = Icon.FromHandle(bmp.GetHicon());
-            bmp.Dispose();
-            return icon;
+            catch { }
+            return AppIcon(!lightTaskbar, SystemInformation.SmallIconSize);
         }
     }
 
@@ -541,7 +538,7 @@ namespace Driftscape
         {
             this.onMessage = onMessage;
             Text = Program.Name;
-            Icon = Host.MakeIcon("景");
+            Icon = Host.AppIcon(false, new Size(32, 32));
             BackColor = Ink;
             StartPosition = FormStartPosition.CenterScreen;
             var wa = Screen.PrimaryScreen.WorkingArea;
@@ -567,7 +564,7 @@ namespace Driftscape
                 await web.EnsureCoreWebView2Async(env);
                 if (IsDisposed) return;
                 var c = web.CoreWebView2;
-                c.Settings.AreDevToolsEnabled = Environment.GetEnvironmentVariable("DRIFTSCAPE_DEVTOOLS") == "1";
+                c.Settings.AreDevToolsEnabled = Environment.GetEnvironmentVariable("PAPERWALL_DEVTOOLS") == "1";
                 c.Settings.IsStatusBarEnabled = false;
                 c.Settings.IsZoomControlEnabled = false;
                 c.Settings.AreDefaultContextMenusEnabled = false;
@@ -707,7 +704,7 @@ namespace Driftscape
     {
         static IntPtr progman, workerw, defView;
         static bool raised; // Windows 11 24H2+: icons and wallpaper are both children of Progman
-        public static bool Layered = Environment.GetEnvironmentVariable("DRIFTSCAPE_LAYERED") != "0";
+        public static bool Layered = Environment.GetEnvironmentVariable("PAPERWALL_LAYERED") != "0";
 
         public static bool Find()
         {
@@ -776,7 +773,7 @@ namespace Driftscape
     class ShellWatcher : NativeWindow
     {
         readonly int taskbar = (int)Native.RegisterWindowMessage("TaskbarCreated");
-        readonly int open = (int)Native.RegisterWindowMessage("Driftscape.Open");
+        readonly int open = (int)Native.RegisterWindowMessage("Paperwall.Open");
         readonly Action onShell, onOpen;
         public ShellWatcher(Action shellCb, Action openCb)
         {
@@ -794,7 +791,8 @@ namespace Driftscape
 
     static class Autostart
     {
-        const string Key = @"Software\Microsoft\Windows\CurrentVersion\Run", Name = "Driftscape", OldName = "ShanShuiWallpaper";
+        const string Key = @"Software\Microsoft\Windows\CurrentVersion\Run", Name = "Paperwall";
+        static readonly string[] OldNames = { "Driftscape", "ShanShuiWallpaper" };
         public static bool Enabled
         {
             get { using (var k = Registry.CurrentUser.OpenSubKey(Key)) return k != null && k.GetValue(Name) != null; }
@@ -804,9 +802,25 @@ namespace Driftscape
                 {
                     if (value) k.SetValue(Name, "\"" + Application.ExecutablePath + "\"");
                     else k.DeleteValue(Name, false);
-                    k.DeleteValue(OldName, false); // the app's old name; never start both
+                    foreach (string old in OldNames) k.DeleteValue(old, false); // the app's old names; never start two
                 }
             }
+        }
+        // Someone who had Start with Windows on under an old name keeps it under the new one.
+        public static void Migrate()
+        {
+            try
+            {
+                using (var k = Registry.CurrentUser.OpenSubKey(Key))
+                {
+                    if (k == null) return;
+                    bool had = false;
+                    foreach (string old in OldNames) if (k.GetValue(old) != null) had = true;
+                    if (!had) return;
+                }
+                Enabled = true;
+            }
+            catch { }
         }
     }
 
@@ -841,7 +855,6 @@ namespace Driftscape
         [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
         [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
         [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out int pid);
-        [DllImport("user32.dll")] public static extern bool DestroyIcon(IntPtr h);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetClassName(IntPtr h, StringBuilder sb, int n);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern uint RegisterWindowMessage(string s);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern bool SystemParametersInfo(uint action, uint p, StringBuilder v, uint flags);
@@ -891,16 +904,6 @@ namespace Driftscape
             if (!GetWindowRect(h, out r)) return false;
             Rectangle s = Screen.FromHandle(h).Bounds;
             return r.Left <= s.Left && r.Top <= s.Top && r.Right >= s.Right && r.Bottom >= s.Bottom;
-        }
-
-        public static GraphicsPath RoundRect(RectangleF r, float rad)
-        {
-            var p = new GraphicsPath();
-            float d = rad * 2;
-            p.AddArc(r.X, r.Y, d, d, 180, 90); p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
-            p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90); p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
-            p.CloseFigure();
-            return p;
         }
     }
 }

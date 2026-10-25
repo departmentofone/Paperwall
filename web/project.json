@@ -1,7 +1,7 @@
 {
   "file": "index.html",
   "preview": "thumbnail.jpg",
-  "title": "Driftscape",
+  "title": "Paperwall",
   "type": "web",
   "general": {
     "properties": {
@@ -25,11 +25,10 @@
         { "label": "Automatic", "value": "auto" }, { "label": "Clear", "value": "none" }, { "label": "Rain", "value": "rain" }, { "label": "Snow", "value": "snow" },
         { "label": "Falling blossom (Yūgen, Tabiji)", "value": "petals" } ] },
       "quality": { "order": 7, "text": "Resolution", "type": "combo", "value": "auto", "options": [
-        { "label": "Auto (build default)", "value": "auto" }, { "label": "720p (weak GPUs)", "value": "low" }, { "label": "1080p", "value": "1080p" },
+        { "label": "Auto (matches your screen)", "value": "auto" }, { "label": "720p (weak GPUs)", "value": "low" }, { "label": "1080p", "value": "1080p" },
         { "label": "1440p / 2K", "value": "1440p" }, { "label": "2160p / 4K", "value": "4k" }, { "label": "Native", "value": "native" } ] },
       "birds": { "order": 8, "text": "Birds", "type": "bool", "value": true },
       "mist": { "order": 9, "text": "Drifting mist", "type": "bool", "value": true },
-      "inscription": { "order": 10, "text": "Inscription and seal", "type": "bool", "value": true },
       "newscene": { "order": 11, "text": "New scene (toggle)", "type": "bool", "value": false }
     }
   }

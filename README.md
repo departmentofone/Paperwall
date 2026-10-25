@@ -1,18 +1,20 @@
 <div align="center">
 
-# Driftscape
+<img src="docs/brand/paperwall-ink.svg" alt="" width="88">
+
+# Paperwall
 
 **Painted landscapes that drift past behind your desktop icons, live, without repeating.**
 
 Pick one of four themes and a painting style. Mist rolls through the valleys, lanterns come on at dusk, and the scroll keeps going for as long as the PC is on.
 
 [![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-2b6cb0?style=flat-square)](#install)
-[![1080p · 2K · 4K · ultrawide](https://img.shields.io/badge/1080p%20%C2%B7%202K%20%C2%B7%204K-ultrawide%20ready-8a5a44?style=flat-square)](#every-screen)
+[![Fits any screen](https://img.shields.io/badge/1080p%20to%204K-ultrawide%20ready-8a5a44?style=flat-square)](#every-screen)
 [![Light on the CPU](https://img.shields.io/badge/CPU-about%2010%25%20of%20one%20core-4a7c59?style=flat-square)](#light-on-your-pc)
 [![Lively · Wallpaper Engine](https://img.shields.io/badge/also%20for-Lively%20%C2%B7%20Wallpaper%20Engine-6b5b95?style=flat-square)](#install)
 [![MIT](https://img.shields.io/badge/license-MIT-555?style=flat-square)](LICENSE)
 
-<img src="docs/screenshots/yugen-sumi.jpg" alt="Yūgen theme in the sumi-e style: ink-wash mountains, a red sun and a torii in the water" width="100%">
+<img src="docs/screenshots/yugen-sumi.jpg" alt="Yūgen theme in the sumi-e style: ink-wash mountains, a red sun and maples" width="100%">
 
 </div>
 
@@ -87,32 +89,29 @@ Each theme is a single file in `web/themes/`, and the app picks it up on its own
 | 🕰 **Time and seasons** | Dawn, day, dusk and night follow your clock. The moon shows tonight's real phase. Seasons follow the calendar, with automatic rain, snow and falling blossom |
 | 🖌 **Brushwork** | Pressure-tapered strokes, texture strokes, ink washes and paper grain, drawn differently for each style |
 | 🌫 **Atmosphere** | Drifting mist and cloud bands, waterfalls, birds and cranes in flight, lit windows at night |
-| 🀄 **Finishing touches** | A generated inscription with a red seal stamp in the corner |
-| 🎛 **Settings two ways** | A Driftscape window with live previews of every theme and style, and the full set of options in the tray menu |
+| 🎛 **Settings two ways** | A Paperwall window with live previews of every theme and style, and the full set of options in the tray menu |
 
 ## Install
 
-Grab a build from [**Releases**](../../releases/latest):
+Grab a build from [**Releases**](../../releases/latest). There is one download for every screen size:
 
-| Your screen | Windows app | Lively Wallpaper / Wallpaper Engine |
-|---|---|---|
-| 1080p | `Driftscape-1080p-Windows.zip` | `Driftscape-1080p-Lively-WE.zip` |
-| 1440p / 2K | `Driftscape-2K-Windows.zip` | `Driftscape-2K-Lively-WE.zip` |
-| 2160p / 4K | `Driftscape-4K-Windows.zip` | `Driftscape-4K-Lively-WE.zip` |
+| Windows app | Lively Wallpaper / Wallpaper Engine |
+|---|---|
+| `Paperwall-Windows.zip` | `Paperwall-Lively-WE.zip` |
 
-**Windows app** (recommended, about 1.5 MB): unzip anywhere and run `Driftscape.exe`. A red seal appears in the tray.
-Double-click it to open the Driftscape window, or right-click it for the same settings as a menu. Turn on **Start with Windows** to keep it. **Exit** restores your normal wallpaper.
+**Windows app** (recommended, about 1.5 MB): unzip anywhere and run `Paperwall.exe`. The Paperwall icon appears in the tray.
+Double-click it to open the Paperwall window, or right-click it for the same settings as a menu. Turn on **Start with Windows** to keep it. **Exit** restores your normal wallpaper.
 It needs the Edge WebView2 Runtime, which comes with Windows 11.
 
-<img src="docs/screenshots/gallery.jpg" alt="The Driftscape window: themes on the left, a live preview with style tiles below, settings on the right" width="100%">
+<img src="docs/screenshots/gallery.jpg" alt="The Paperwall window: themes on the left, a live preview with style tiles below, settings on the right" width="100%">
 
 **Lively Wallpaper**: drag the `-Lively-WE.zip` onto Lively. **Wallpaper Engine**: unzip it into a folder and open `project.json` from the editor. Both offer a **Look** list with every theme and style.
 
-> The three builds differ only in their *Auto* resolution. Any build can switch resolution from its settings.
+> Resolution *Auto* matches your monitor, up to 4K. If your PC struggles, pick 1080p or 720p in the settings.
 
 ## Every screen
 
-Resolution presets cap the render **height** (720p, 1080p, 1440p, 4K or native), and the width always follows your monitor.
+*Auto* renders at your monitor's own height, up to 4K. The other presets cap the render **height** (720p, 1080p, 1440p, 4K or native), and the width always follows your monitor.
 21:9 and 32:9 ultrawides see a wider stretch of the scroll with nothing stretched. Multiple monitors each get their own scene.
 
 ## Light on your PC
@@ -158,7 +157,7 @@ web/index.html    the wallpaper page; gallery.html is the settings window
 host/             the Windows app (one C# file), build.ps1, package.ps1
 ```
 
-Adding a theme means subclassing the engine with a scene recipe and painters, then calling `Driftscape.register(...)`. The tray menu and the Driftscape window list it automatically.
+Adding a theme means subclassing the engine with a scene recipe and painters, then calling `Paperwall.register(...)`. The tray menu and the Paperwall window list it automatically.
 
 ## Build from source
 
@@ -167,12 +166,12 @@ powershell -ExecutionPolicy Bypass -File host/package.ps1 -Version v2.0.0
 ```
 
 This uses the C# compiler that ships with Windows (.NET Framework 4.8), so there is no SDK to install. It downloads the WebView2 SDK
-(about 9 MB, from nuget.org) once, and writes all six release zips to `release/`. Pushing a `v*` tag runs the same script on
+(about 9 MB, from nuget.org) once, and writes both release zips to `release/`. Pushing a `v*` tag runs the same script on
 GitHub Actions and attaches the zips to a Release.
 
 ## Credits
 
-Made by **Department of One**.
+Made by **Department of One**. The name is a joke on *wallpaper*: every scene is painted on paper.
 
 Shan Shui is inspired by **[shan-shui-inf](https://github.com/LingDong-/shan-shui-inf)** by Lingdong Huang (MIT). Its restraint (grey ink,
 white-bodied mountains, volume built from many faint lines) set the look for that theme. This is an independent

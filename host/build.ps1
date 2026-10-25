@@ -1,4 +1,4 @@
-# Builds dist\Driftscape.exe with the C# compiler built into Windows (.NET Framework 4.8).
+# Builds dist\Paperwall.exe with the C# compiler built into Windows (.NET Framework 4.8).
 # The only download is Microsoft's WebView2 SDK package from nuget.org (~9 MB, cached in host\packages).
 param([string]$WebView2Version = '1.0.4258.31')
 $ErrorActionPreference = 'Stop'
@@ -24,27 +24,15 @@ if (-not (Test-Path $csc)) { $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framewo
 
 New-Item -ItemType Directory -Force $dist | Out-Null
 
-# App icon: a red seal with 景 (scenery), drawn with System.Drawing.
-Add-Type -AssemblyName System.Drawing
-$ico = Join-Path $here 'app.ico'
-if (-not (Test-Path $ico)) {
-    $bmp = New-Object System.Drawing.Bitmap 64, 64
-    $g = [System.Drawing.Graphics]::FromImage($bmp)
-    $g.SmoothingMode = 'AntiAlias'; $g.TextRenderingHint = 'AntiAliasGridFit'
-    $g.FillRectangle((New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(176, 38, 32))), 4, 4, 56, 56)
-    $font = New-Object System.Drawing.Font 'Microsoft YaHei', 40, ([System.Drawing.FontStyle]::Bold), ([System.Drawing.GraphicsUnit]::Pixel)
-    $sf = New-Object System.Drawing.StringFormat; $sf.Alignment = 'Center'; $sf.LineAlignment = 'Center'
-    $g.DrawString([string][char]0x666F, $font, [System.Drawing.Brushes]::White, (New-Object System.Drawing.RectangleF 0, 2, 64, 64), $sf)
-    $icon = [System.Drawing.Icon]::FromHandle($bmp.GetHicon())
-    $fs = [System.IO.File]::Create($ico); $icon.Save($fs); $fs.Close()
-    $g.Dispose(); $bmp.Dispose()
-}
+# App icons (docs/brand has the source SVGs): ink tile for the exe and light taskbars, paper tile for dark ones.
+$ico = Join-Path $here 'paperwall.ico'
+$icoLight = Join-Path $here 'paperwall-light.ico'
 
 $refs = @('System.dll', 'System.Drawing.dll', 'System.Windows.Forms.dll', 'System.Web.Extensions.dll',
           (Join-Path $lib.FullName 'Microsoft.Web.WebView2.Core.dll'),
           (Join-Path $lib.FullName 'Microsoft.Web.WebView2.WinForms.dll')) | ForEach-Object { "/r:$_" }
 
-& $csc /nologo /target:winexe /optimize+ /platform:anycpu "/win32icon:$ico" "/out:$(Join-Path $dist 'Driftscape.exe')" @refs (Join-Path $here 'Driftscape.cs')
+& $csc /nologo /target:winexe /optimize+ /platform:anycpu "/win32icon:$ico" "/resource:$ico,Paperwall.ico" "/resource:$icoLight,Paperwall.light.ico" "/out:$(Join-Path $dist 'Paperwall.exe')" @refs (Join-Path $here 'Paperwall.cs')
 if ($LASTEXITCODE -ne 0) { throw "csc failed ($LASTEXITCODE)" }
 
 Copy-Item (Join-Path $lib.FullName 'Microsoft.Web.WebView2.Core.dll'), (Join-Path $lib.FullName 'Microsoft.Web.WebView2.WinForms.dll') $dist -Force
@@ -60,4 +48,4 @@ $web = Join-Path $dist 'web'
 if (Test-Path $web) { Remove-Item $web -Recurse -Force }
 Copy-Item (Join-Path $root 'web') $web -Recurse
 Get-ChildItem $web -Filter '_*' | Remove-Item -Force
-Write-Host "Built $(Join-Path $dist 'Driftscape.exe')"
+Write-Host "Built $(Join-Path $dist 'Paperwall.exe')"
