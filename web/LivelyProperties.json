@@ -1,5 +1,5 @@
 {
-  "look": { "type": "dropdown", "value": 2, "text": "Look", "items": ["Shan Shui: Ink", "Shan Shui: Blue-green", "Yūgen: Sumi-e", "Yūgen: Woodcut", "Yūgen: Gold screen", "Yūgen: Ukiyo-e", "Jiangnan: Lines and dots", "Jiangnan: Misty rain", "Jiangnan: Blue and white", "Tabiji: Shin-hanga", "Tabiji: Hiroshige", "Tabiji: Sumi", "Tabiji: Cut paper"] },
+  "look": { "type": "dropdown", "value": 2, "text": "Look", "items": ["Shan Shui: Ink", "Shan Shui: Blue-green", "Yūgen: Sumi-e", "Yūgen: Woodcut", "Yūgen: Gold screen", "Yūgen: Ukiyo-e", "Jiangnan: Lines and dots", "Jiangnan: Misty rain", "Jiangnan: Blue and white", "Tabiji: Shin-hanga", "Tabiji: Hiroshige", "Tabiji: Sumi", "Tabiji: Cut paper", "Sprawl: Neon noir", "Sprawl: Synthwave", "Sprawl: Amber smog", "Sprawl: Phosphor"] },
   "speed": { "type": "slider", "value": 1, "min": 0.2, "max": 4, "step": 0.1, "text": "Scroll speed" },
   "fps": { "type": "slider", "value": 30, "min": 10, "max": 60, "step": 1, "text": "Frame rate cap" },
   "quality": { "type": "dropdown", "value": 0, "text": "Resolution", "items": ["Auto (matches your screen)", "720p (weak GPUs)", "1080p", "1440p / 2K", "2160p / 4K", "Native"] },

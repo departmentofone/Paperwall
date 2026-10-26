@@ -6,7 +6,7 @@
 
 **Painted landscapes that drift past behind your desktop icons, live, without repeating.**
 
-Pick one of four themes and a painting style. Mist rolls through the valleys, lanterns come on at dusk, and the scroll keeps going for as long as the PC is on.
+Pick one of five themes and a painting style. Mist rolls through the valleys, lanterns come on at dusk, and the scroll keeps going for as long as the PC is on.
 
 [![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-2b6cb0?style=flat-square)](#install)
 [![Fits any screen](https://img.shields.io/badge/1080p%20to%204K-ultrawide%20ready-8a5a44?style=flat-square)](#every-screen)
@@ -77,6 +77,21 @@ The closest view: you walk along a village street on the old highway. Shopfronts
   <tr>
     <td width="50%"><img src="docs/screenshots/tabiji-sumi.jpg" alt="Tabiji, sumi style in snow"><br><sub><b>Sumi 墨</b>: ink only, with red for gates and lanterns</sub></td>
     <td width="50%"><img src="docs/screenshots/tabiji-kirie.jpg" alt="Tabiji, cut paper style at dusk"><br><sub><b>Cut paper 切り絵</b>: layered silhouettes with glowing cut-out windows</sub></td>
+  </tr>
+</table>
+
+### Sprawl &nbsp;<sub>Cyberpunk city</sub>
+
+The one theme with no paper in it. A rain-soaked street at night: shophouses stacked with air conditioners and fire escapes, vertical neon signs, wires strung across the road, people under glowing umbrellas, and flying cars crossing between the towers. An elevated train runs past now and then. The signs use pictograms only, so no text appears anywhere.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/sprawl-noir.jpg" alt="Sprawl, neon noir style at night in the rain"><br><sub><b>Neon noir</b>: wet street level, neon reflected in the road</sub></td>
+    <td width="50%"><img src="docs/screenshots/sprawl-synth.jpg" alt="Sprawl, synthwave style"><br><sub><b>Synthwave</b>: a skyline on a glowing grid under a striped sun, palms in front</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/sprawl-smog.jpg" alt="Sprawl, amber smog style at dusk"><br><sub><b>Amber smog</b>: the view from the rooftops, with the train on its viaduct and holograms in the haze</sub></td>
+    <td width="50%"><img src="docs/screenshots/sprawl-phosphor.jpg" alt="Sprawl, phosphor style in the rain"><br><sub><b>Phosphor</b>: green wireframe on black, like an old terminal</sub></td>
   </tr>
 </table>
 
@@ -151,7 +166,7 @@ Windows 11 24H2+, is in **[docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md)**.
 
 ```
 web/core.js       the shared engine: chunks, parallax strips, mist, sky, lights, weather
-web/themes/       one file per theme (shanshui.js, yugen.js, jiangnan.js, tabiji.js)
+web/themes/       one file per theme (shanshui.js, yugen.js, jiangnan.js, tabiji.js, sprawl.js)
 web/stage.js      runs the chosen theme and crossfades between themes
 web/index.html    the wallpaper page; gallery.html is the settings window
 host/             the Windows app (one C# file), build.ps1, package.ps1
@@ -175,6 +190,6 @@ Made by **Department of One**. The name is a joke on *wallpaper*: every scene is
 
 Shan Shui is inspired by **[shan-shui-inf](https://github.com/LingDong-/shan-shui-inf)** by Lingdong Huang (MIT). Its restraint (grey ink,
 white-bodied mountains, volume built from many faint lines) set the look for that theme. This is an independent
-rewrite and no code is shared. Yūgen draws on Kano-school gold screens, Sesshū's ink landscapes and Edo woodblock prints. Jiangnan follows Wu Guanzhong's water towns, and Tabiji follows Hiroshige's Tōkaidō series and Kawase Hasui's shin-hanga.
+rewrite and no code is shared. Yūgen draws on Kano-school gold screens, Sesshū's ink landscapes and Edo woodblock prints. Jiangnan follows Wu Guanzhong's water towns, and Tabiji follows Hiroshige's Tōkaidō series and Kawase Hasui's shin-hanga. Sprawl borrows from the neon cities of eighties and nineties science fiction.
 
 MIT licensed. See [LICENSE](LICENSE).

@@ -12,7 +12,9 @@
         { "label": "Jiangnan: Lines and dots", "value": "jiangnan.wu" }, { "label": "Jiangnan: Misty rain", "value": "jiangnan.rain" },
         { "label": "Jiangnan: Blue and white", "value": "jiangnan.qinghua" },
         { "label": "Tabiji: Shin-hanga", "value": "tabiji.shinhanga" }, { "label": "Tabiji: Hiroshige", "value": "tabiji.hiroshige" },
-        { "label": "Tabiji: Sumi", "value": "tabiji.sumi" }, { "label": "Tabiji: Cut paper", "value": "tabiji.kirie" } ] },
+        { "label": "Tabiji: Sumi", "value": "tabiji.sumi" }, { "label": "Tabiji: Cut paper", "value": "tabiji.kirie" },
+        { "label": "Sprawl: Neon noir", "value": "sprawl.noir" }, { "label": "Sprawl: Synthwave", "value": "sprawl.synth" },
+        { "label": "Sprawl: Amber smog", "value": "sprawl.smog" }, { "label": "Sprawl: Phosphor", "value": "sprawl.phosphor" } ] },
       "speed": { "order": 1, "text": "Scroll speed", "type": "slider", "min": 0.2, "max": 4, "step": 0.1, "precision": 1, "fraction": true, "value": 1 },
       "fps": { "order": 2, "text": "Frame rate cap", "type": "slider", "min": 10, "max": 60, "value": 30 },
       "time": { "order": 3, "text": "Time of day", "type": "combo", "value": "auto", "options": [

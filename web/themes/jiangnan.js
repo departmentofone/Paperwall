@@ -406,7 +406,7 @@
       const dl = new DL(), rng = RNG(f.seed), p = f.p, o = { reflect: W, lanterns: 0.4 };
       if (p.g) gableHouse(dl, rng, st, p.x, p.w, Q - p.back, p.h, o); else longHouse(dl, rng, st, p.x, p.w, Q - p.back, p.h, o);
       // lit windows shimmer in the canal too
-      if (dl.lights) { const Lt = dl.lights, n = Lt.length; for (let k = 0; k < n; k += 3) dl.light(Lt[k], 2 * W - Lt[k + 1] + 6, Lt[k + 2] * 0.8); }
+      if (dl.lights) { const Lt = dl.lights, n = Lt.length; for (let k = 0; k < n; k += 4) dl.light(Lt[k], 2 * W - Lt[k + 1] + 6, Lt[k + 2] * 0.8, Lt[k + 3]); }
       return dl;
     },
     // the stone embankment along the front, with water steps; leaves a gap where a bridge is

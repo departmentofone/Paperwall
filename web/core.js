@@ -78,7 +78,8 @@
     }
     beginClip(p) { const g = { clip: p instanceof Float32Array ? p : new Float32Array(p), ops: [], minx: Infinity, maxx: -Infinity }; this._t().push(g); this.stack.push(g); }
     endClip() { this.stack.pop(); }
-    light(x, y, r) { (this.lights || (this.lights = [])).push(x, y, r); }
+    // c picks a glow colour from the engine's _glowSprites() (0 = warm lamplight)
+    light(x, y, r, c) { (this.lights || (this.lights = [])).push(x, y, r, c || 0); }
   }
 
   function tracePath(ctx, p) {
@@ -86,6 +87,13 @@
     ctx.moveTo(p[0], p[1]);
     for (let i = 2; i < p.length; i += 2) ctx.lineTo(p[i], p[i + 1]);
     ctx.closePath();
+  }
+  // a soft radial glow sprite: core, middle and edge colours
+  function glowSprite(c0, c1, c2, a0) {
+    const gl = mkCanvas(64, 64), gg = gl.getContext('2d'), gr = gg.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, rgba(c0, a0 || 0.95)); gr.addColorStop(0.25, rgba(c1, 0.45)); gr.addColorStop(1, rgba(c2, 0));
+    gg.fillStyle = gr; gg.fillRect(0, 0, 64, 64);
+    return gl;
   }
   function drawOps(ctx, ops, x0, x1) {
     for (let i = 0; i < ops.length; i++) {
@@ -341,7 +349,7 @@
           if (dl.lights) {
             lg.globalCompositeOperation = 'lighter';
             const Lt = dl.lights;
-            for (let k = 0; k < Lt.length; k += 3) { const r = Lt[k + 2]; lg.drawImage(this.glow, Lt[k] - r, Lt[k + 1] - r, 2 * r, 2 * r); }
+            for (let k = 0; k < Lt.length; k += 4) { const r = Lt[k + 2]; lg.drawImage(this.glows[Lt[k + 3]] || this.glow, Lt[k] - r, Lt[k + 1] - r, 2 * r, 2 * r); }
             lit = true;
           }
         }
@@ -366,13 +374,14 @@
       this.mistPatL = this.mist.map((c) => this.lg.createPattern(c, 'repeat-x'));
       this.grain = this._paintGrain();
       this.overlay = mkCanvas(this.W, this.H);
-      // warm light glow
-      const gl = mkCanvas(64, 64), gg = gl.getContext('2d'), gr = gg.createRadialGradient(32, 32, 0, 32, 32, 32);
-      gr.addColorStop(0, 'rgba(255,214,140,0.95)'); gr.addColorStop(0.25, 'rgba(255,170,80,0.45)'); gr.addColorStop(1, 'rgba(255,140,60,0)');
-      gg.fillStyle = gr; gg.fillRect(0, 0, 64, 64);
-      this.glow = gl;
+      this.glows = this._glowSprites();
+      this.glow = this.glows[0];
       this.todKey = '';
     }
+    // Glow sprites for night lights; DL.light(x, y, r, c) picks one by index. Default: warm lamplight.
+    _glowSprites() { return [glowSprite([255, 214, 140], [255, 170, 80], [255, 140, 60])]; }
+    // How strongly the light map is added (0..1). Default: lights come on with the dark.
+    _lit() { return sstep(0.25, 0.85, this.night); }
     // Default mist: soft paper-coloured radial blobs, tiled seamlessly across the strip width.
     _paintMist(g, mb, i, w, h) {
       const kx = this.kx, paper = this.def.paper;
@@ -646,7 +655,7 @@
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
       this._drawSky();
-      const lit = sstep(0.25, 0.85, this.night);
+      const lit = this._lit();
       if (lit > 0) { this.lg.globalCompositeOperation = 'source-over'; this.lg.globalAlpha = 1; this.lg.clearRect(0, 0, this.lightC.width, this.lightC.height); }
       for (let i = 0; i < this.ls.length; i++) {
         this._drawLayer(i);
@@ -782,6 +791,6 @@
     Engine, DEFAULTS, CONFIG, CW, register, themes, theme,
     // painter toolkit for themes
     TAU, clamp, lerp, sstep, h32, hash2, hash4, RNG, vnoise, fbm, rgba, mixc,
-    DL, drawOps, brush, curve, offsetLine, blob, rect, qbez, interpY, Occ, mkCanvas, dens, P,
+    DL, drawOps, brush, curve, offsetLine, blob, rect, qbez, interpY, Occ, mkCanvas, dens, P, glowSprite,
   };
 })();
