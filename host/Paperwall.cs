@@ -157,7 +157,6 @@ namespace Paperwall
             if (seed <= 0) { seed = new Random().Next(1, 1000000000); cfg["seed"] = seed.ToString(CultureInfo.InvariantCulture); }
 
             tray.Icon = TrayIcon();
-            Microsoft.Win32.SystemEvents.UserPreferenceChanged += delegate { UpdateIcon(); };
             tray.Text = Program.Name;
             tray.ContextMenuStrip = new ContextMenuStrip();
             tray.ContextMenuStrip.Opening += delegate { FillMenu(tray.ContextMenuStrip); };
@@ -507,24 +506,13 @@ namespace Paperwall
             if (old != null) old.Dispose();
         }
 
-        // The app icon from the exe's resources. The tray gets the paper-coloured tile on a dark
-        // taskbar and the ink tile on a light one, so it reads on both.
-        public static Icon AppIcon(bool light, Size size)
+        // The app icon from the exe's resources.
+        public static Icon AppIcon(Size size)
         {
-            using (var st = typeof(Host).Assembly.GetManifestResourceStream(light ? "Paperwall.light.ico" : "Paperwall.ico"))
+            using (var st = typeof(Host).Assembly.GetManifestResourceStream("Paperwall.ico"))
                 return new Icon(st, size);
         }
-        static Icon TrayIcon()
-        {
-            bool lightTaskbar = false;
-            try
-            {
-                using (var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
-                    lightTaskbar = k != null && Convert.ToInt32(k.GetValue("SystemUsesLightTheme", 0)) == 1;
-            }
-            catch { }
-            return AppIcon(!lightTaskbar, SystemInformation.SmallIconSize);
-        }
+        static Icon TrayIcon() { return AppIcon(SystemInformation.SmallIconSize); }
     }
 
     // ------------------------------------------------------------------ gallery window
@@ -538,7 +526,7 @@ namespace Paperwall
         {
             this.onMessage = onMessage;
             Text = Program.Name;
-            Icon = Host.AppIcon(false, new Size(32, 32));
+            Icon = Host.AppIcon(new Size(32, 32));
             BackColor = Ink;
             StartPosition = FormStartPosition.CenterScreen;
             var wa = Screen.PrimaryScreen.WorkingArea;

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/brand/paperwall-ink.svg" alt="" width="88">
+<img src="docs/brand/paperwall.svg" alt="" width="88">
 
 # Paperwall
 

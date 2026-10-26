@@ -24,15 +24,14 @@ if (-not (Test-Path $csc)) { $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framewo
 
 New-Item -ItemType Directory -Force $dist | Out-Null
 
-# App icons (docs/brand has the source SVGs): ink tile for the exe and light taskbars, paper tile for dark ones.
+# App icon (docs/brand has the source SVG)
 $ico = Join-Path $here 'paperwall.ico'
-$icoLight = Join-Path $here 'paperwall-light.ico'
 
 $refs = @('System.dll', 'System.Drawing.dll', 'System.Windows.Forms.dll', 'System.Web.Extensions.dll',
           (Join-Path $lib.FullName 'Microsoft.Web.WebView2.Core.dll'),
           (Join-Path $lib.FullName 'Microsoft.Web.WebView2.WinForms.dll')) | ForEach-Object { "/r:$_" }
 
-& $csc /nologo /target:winexe /optimize+ /platform:anycpu "/win32icon:$ico" "/resource:$ico,Paperwall.ico" "/resource:$icoLight,Paperwall.light.ico" "/out:$(Join-Path $dist 'Paperwall.exe')" @refs (Join-Path $here 'Paperwall.cs')
+& $csc /nologo /target:winexe /optimize+ /platform:anycpu "/win32icon:$ico" "/resource:$ico,Paperwall.ico" "/out:$(Join-Path $dist 'Paperwall.exe')" @refs (Join-Path $here 'Paperwall.cs')
 if ($LASTEXITCODE -ne 0) { throw "csc failed ($LASTEXITCODE)" }
 
 Copy-Item (Join-Path $lib.FullName 'Microsoft.Web.WebView2.Core.dll'), (Join-Path $lib.FullName 'Microsoft.Web.WebView2.WinForms.dll') $dist -Force
